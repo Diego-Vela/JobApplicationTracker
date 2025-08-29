@@ -1,13 +1,14 @@
+# app/main.py
 from fastapi import FastAPI
-from backend.routers import users, resumes, applications
+from .routers import auth, users, files, applications, notes
+from .db import Base, engine
 
-app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
+app = FastAPI(title="Job Application Tracker API")
+
+app.include_router(auth.router)
 app.include_router(users.router)
-#app.include_router(resumes.router)
+app.include_router(files.router)
 app.include_router(applications.router)
-
-@app.get("/")
-def root():
-    return {"message": "Welcome to the Job Application Tracker!"}
-
+app.include_router(notes.router)

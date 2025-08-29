@@ -1,25 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+# app/routers/users.py
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from backend import schemas, models, crud
-from backend.database import SessionLocal
+from ..deps import get_db, get_current_user_id
+from .. import models, schemas
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["users"])
 
-# Dependency to get the database session
-def get_db():
-  db = SessionLocal()
-  try:
-    yield db
-  finally:
-    db.close()
-
-@router.post("/", response_model=schemas.UserResponse)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-  db_user = crud.get_user_by_email(db, email=user.email)
-  if db_user:
-    raise HTTPException(status_code=400, detail="Email already registered")
-  return crud.create_user(db=db, user=user)
-
-@router.delete("/{user_id}")
-def delete_user(email: str, db: Session = Depends(get_db)):
-  return crud.delete_user(db, email=email)
+@router.get("/me", response_model=schemas.UserOut)
+def me(user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    user = db.query(models.User).get(user_id)
+    return schemas.UserOut(
+        user_id=user.user_id, email=user.email, premium=user.premium, created_at=user.created_at
+    )

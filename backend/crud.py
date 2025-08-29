@@ -3,9 +3,11 @@ from backend import models, schemas
 from fastapi import HTTPException
 
 # ----- Users -----
+# Gets the Information for a user by their email
 def get_user_by_email(db: Session, email: str):
   return db.query(models.User).filter(models.User.email == email).first()
 
+# Create a user using the provided schema
 def create_user(db: Session, user: schemas.UserCreate):
   db_user = models.User(email=user.email, password_hash=user.password) # Hash at some point
   db.add(db_user)
@@ -13,6 +15,7 @@ def create_user(db: Session, user: schemas.UserCreate):
   db.refresh(db_user)
   return db_user
 
+# Deletes a user by email
 def delete_user(db: Session, email: str):
   db_user = get_user_by_email(db, email)
   if db_user:
@@ -24,6 +27,7 @@ def delete_user(db: Session, email: str):
   return None
 
 # ----- Applications -----
+# Creates an application
 def create_application(db: Session, application: schemas.ApplicationCreate):
   # Check that the user exists
   db_user = db.query(models.User).filter(models.User.id == application.user_id).first()
