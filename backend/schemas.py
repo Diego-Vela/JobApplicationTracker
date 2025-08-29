@@ -75,6 +75,6 @@ class NoteCreate(BaseModel):
 
 class NoteOut(BaseModel):
     note_id: str
-    aplication_id: str
+    application_id: str
     content: str
     created_at: datetime

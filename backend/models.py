@@ -56,7 +56,7 @@ class Application(Base):
 class ApplicationNote(Base):
     __tablename__ = "application_notes"
     note_id       = Column(UUID(as_uuid=False), primary_key=True, default=uuid_pk)
-    aplication_id = Column(UUID(as_uuid=False), ForeignKey("application.aplication_id", ondelete="CASCADE"), nullable=False)
+    application_id = Column(UUID(as_uuid=False), ForeignKey("application.application_id", ondelete="CASCADE"), nullable=False)
     user_id       = Column(UUID(as_uuid=False), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     content       = Column(Text, nullable=False)
     created_at    = Column(DateTime(timezone=True), server_default=func.now())
