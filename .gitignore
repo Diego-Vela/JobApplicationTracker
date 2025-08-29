@@ -1,4 +1,7 @@
-# Python bytecode and cache
+# ======================
+# Python
+# ======================
+# Bytecode and cache
 __pycache__/
 *.py[cod]
 
@@ -11,17 +14,40 @@ venv/
 .env
 .env.*
 
-# IDE/editor settings
-.vscode/
-.idea/
-*.swp
-
-# OS-specific
-.DS_Store
-Thumbs.db
-
 # Logs
 *.log
 
 # Uvicorn reload artifacts
 *.pid
+
+# ======================
+# Node / Vite / Frontend
+# ======================
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Local environment overrides
+*.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ======================
+# IDE / Editor
+# ======================
+.vscode/
+.idea/
+*.swp
+
+# ======================
+# OS-specific
+# ======================
+.DS_Store
+Thumbs.db

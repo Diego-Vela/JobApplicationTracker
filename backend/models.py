@@ -41,8 +41,8 @@ class Application(Base):
     __tablename__ = "application"
     application_id = Column(UUID(as_uuid=False), primary_key=True, default=uuid_pk)  # keeping your original name
     user_id       = Column(UUID(as_uuid=False), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
-    resume_id     = Column(UUID(as_uuid=False), ForeignKey("resumes.resume_id"), nullable=True)
-    cv_id         = Column(UUID(as_uuid=False), ForeignKey("cv.cv_id"), nullable=True)
+    resume_id     = Column(UUID(as_uuid=False), ForeignKey("resumes.resume_id", ondelete="SET NULL"), nullable=True)
+    cv_id         = Column(UUID(as_uuid=False), ForeignKey("cv.cv_id", ondelete="SET NULL"), nullable=True)
     company       = Column(Text, nullable=False)
     job_title     = Column(Text)
     job_description = Column(Text)
