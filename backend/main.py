@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from .routers import auth, users, files, applications, notes
 from .db import Base, engine
+import os
 
 Base.metadata.create_all(bind=engine)
 
