@@ -4,8 +4,11 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-//import SignupPage from "./pages/SignupPage";
-//import ApplicationsPage from "./pages/ApplicationsPage";
+import SignupPage from "./pages/SignupPage";
+import ApplicationsPage from "./pages/ApplicationsPage.tsx";
+import ApplicationNewPage from "./pages/ApplicationNewPage";
+import ApplicationInfoPage from "./pages/ApplicationInfoPage";
+
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -14,9 +17,11 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },        // /
-      { path: "login", element: <LoginPage /> }//,     // /login
-      //{ path: "signup", element: <SignupPage /> },   // /signup
-      //{ path: "applications", element: <ApplicationsPage /> }, // /applications
+      { path: "login", element: <LoginPage /> },     // /login
+      { path: "signup", element: <SignupPage /> },   // /signup
+      { path: "applications", element: <ApplicationsPage /> }, // /applications
+      { path: "applications/new", element: <ApplicationNewPage /> }, // /applications/new
+      { path: "applications/:id", element: <ApplicationInfoPage /> }, // /applications/:id
     ],
   },
 ]);
