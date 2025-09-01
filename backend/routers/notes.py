@@ -80,3 +80,50 @@ def delete_note(
     ).first()
     if not note: raise HTTPException(404, "Note not found")
     db.delete(note); db.commit()
+
+@router.patch("/{note_id}", response_model=schemas.NoteOut)
+def update_note(
+    application_id: str,
+    note_id: str,
+    payload: schemas.NoteCreate,  # re-use the schema with `content: str`
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    # Ensure the application belongs to the current user
+    app_row = (
+        db.query(models.Application)
+        .filter(
+            models.Application.application_id == application_id,
+            models.Application.user_id == user_id,
+        )
+        .first()
+    )
+    if not app_row:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Find the note within that app & user
+    note = (
+        db.query(models.ApplicationNote)
+        .filter(
+            models.ApplicationNote.note_id == note_id,
+            models.ApplicationNote.application_id == application_id,
+            models.ApplicationNote.user_id == user_id,
+        )
+        .first()
+    )
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    new_content = (payload.content or "").strip()
+    if not new_content:
+        raise HTTPException(status_code=400, detail="Content cannot be empty")
+
+    note.content = new_content
+    try:
+        db.commit()
+        db.refresh(note)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Could not update note: {e}")
+
+    return note

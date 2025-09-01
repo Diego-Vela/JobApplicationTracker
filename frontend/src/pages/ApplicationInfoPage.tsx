@@ -110,7 +110,7 @@ export default function ApplicationInfoPage() {
                   error={notesErr}
                   fmtDate={fmtDate}
                   onDelete={(noteId) => deleteNote(id!, noteId)}
-                  onEdit={(note) => updateNote(id!, note.note_id, note.content)} // UI to edit, then call updateNote(id, note.note_id, newContent)
+                  onUpdate={(noteId, content) => updateNote(id!, noteId, content)}
                   confirmDelete="Are you sure you want to delete this note?"
                 />
                 <NoteForm onSubmit={onAddNote} />
