@@ -1,8 +1,8 @@
 // components/applications-page/ApplicationCard.tsx
 import { Link } from "react-router-dom";
-import type { Application, UIStatus, APIStatus } from "./types";
+import type { Application, UIStatus, APIStatus } from "../types";
 import StatusMenu from "./StatusMenu";
-import { API_TO_UI } from "./statusMaps";
+import { API_TO_UI } from "../statusMaps";
 
 type Props = {
   app: Application;

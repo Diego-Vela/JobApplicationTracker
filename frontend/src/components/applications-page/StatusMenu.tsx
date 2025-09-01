@@ -1,7 +1,7 @@
 // components/applications-page/StatusMenu.tsx
 import { useEffect, useState } from "react";
-import { STATUS_LABELS, UI_TO_API } from "./statusMaps";
-import type { UIStatus } from "./types";
+import { STATUS_LABELS, UI_TO_API } from "../statusMaps";
+import type { UIStatus } from "../types";
 import { API_URL, getToken } from "../../api";
 
 type Props = {

@@ -1,8 +1,8 @@
 // src/hooks/useApplications.ts
 import { useCallback, useEffect, useState } from "react";
 import { apiGet } from "../api";
-import type { Application, TabKey, UIStatus, APIStatus } from "../components/applications-page/types";
-import { API_TO_UI } from "../components/applications-page/statusMaps";
+import type { Application, TabKey, UIStatus, APIStatus } from "../components/types";
+import { API_TO_UI } from "../components/statusMaps";
 
 export function useApplications(active: TabKey) {
   const [apps, setApps] = useState<Application[] | null>(null);

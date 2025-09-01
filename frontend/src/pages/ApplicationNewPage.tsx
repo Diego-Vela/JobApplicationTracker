@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { apiPost } from "../api";
 
-type Status = "applied" | "interview" | "offer" | "rejected";
+type Status = "applied" | "interviewing" | "offer" | "rejected";
 
 export default function ApplicationNewPage() {
   const navigate = useNavigate();
@@ -119,7 +119,7 @@ export default function ApplicationNewPage() {
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-brand focus:ring focus:ring-brand/30 disabled:bg-gray-100"
           >
             <option value="applied">Applied</option>
-            <option value="interview">Interview</option>
+            <option value="interviewing">Interviewing</option>
             <option value="offer">Offer</option>
             <option value="rejected">Rejected</option>
           </select>

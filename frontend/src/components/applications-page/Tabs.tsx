@@ -1,8 +1,8 @@
 /* Tabs.tsx
   Displays the different tabs on the UI for filtering job applications
 */
-import { TABS } from "./statusMaps";
-import type { TabKey } from "./types";
+import { TABS } from "../statusMaps";
+import type { TabKey } from "../types";
 
 export default function Tabs({
   value,

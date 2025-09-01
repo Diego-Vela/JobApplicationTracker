@@ -5,7 +5,7 @@ import {
 } from "../components/applications-page";
 import type { TabKey, UIStatus, Application, APIStatus } from "../components/applications-page";
 import { useApplications } from "../hooks/useApplications";
-import { API_TO_UI } from "../components/applications-page/statusMaps";
+import { API_TO_UI } from "../components/statusMaps";
 
 export default function ApplicationsPage() {
   const [active, setActive] = useState<TabKey>("all");

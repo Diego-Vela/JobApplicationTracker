@@ -16,3 +16,10 @@ export type Application = {
 };
 
 export type TabKey = "all" | UIStatus;
+
+export type AppNote = {
+  note_id: string;
+  application_id: string;
+  content: string;
+  created_at: string; // ISO
+};

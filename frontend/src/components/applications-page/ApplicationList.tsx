@@ -1,6 +1,6 @@
 // components/applications-page/ApplicationList.tsx
 import ApplicationCard from "./ApplicationCard";
-import type { Application, UIStatus } from "./types";
+import type { Application, UIStatus } from "../types";
 
 export default function ApplicationList({
   apps,
