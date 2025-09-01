@@ -8,8 +8,11 @@ export type Application = {
   application_id: string;
   company: string;
   job_title?: string | null;
+  job_description?: string | null;
   status?: APIStatus | null;
   applied_date?: string | null; // ISO date
+  resume_id?: string | null;
+  cv_id?: string | null;
 };
 
 export type TabKey = "all" | UIStatus;

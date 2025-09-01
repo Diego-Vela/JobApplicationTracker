@@ -1,38 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiGet, API_URL, getToken } from "../api"; // apiGet provided earlier. We’ll use API_URL/getToken for PATCH & move calls.
+import type { TabKey, UIStatus, Application, APIStatus } from "../components/applications-page";
 
-type UIStatus = "applied" | "interview" | "offer" | "rejected";
-type APIStatus = "applied" | "interviewing" | "offer" | "rejected";
-
-type Application = {
-  application_id: string;
-  company: string;
-  job_title?: string | null;
-  job_description?: string | null;
-  status?: APIStatus | null;
-  applied_date?: string | null; // ISO YYYY-MM-DD
-  resume_id?: string | null;
-  cv_id?: string | null;
-};
-
-const STATUS_LABELS: Record<UIStatus, string> = {
+export const STATUS_LABELS: Record<UIStatus, string> = {
   applied: "Applied",
-  interview: "Interview",
+  interviewing: "Interview",
   offer: "Offer",
   rejected: "Rejected",
 };
 
-// Map between UI values and backend values (if backend uses "interviewing")
-const UI_TO_API: Record<UIStatus, APIStatus> = {
+export const UI_TO_API: Record<UIStatus, APIStatus> = {
   applied: "applied",
-  interview: "interviewing",
+  interviewing: "interviewing",
   offer: "offer",
   rejected: "rejected",
 };
-const API_TO_UI: Record<APIStatus, UIStatus> = {
+
+export const API_TO_UI: Record<APIStatus, UIStatus> = {
   applied: "applied",
-  interviewing: "interview",
+  interviewing: "interviewing",
   offer: "offer",
   rejected: "rejected",
 };
@@ -152,7 +139,7 @@ export default function ApplicationInfoPage() {
               className="rounded-md border px-3 py-1.5 text-sm"
             >
               <option value="applied">{STATUS_LABELS.applied}</option>
-              <option value="interview">{STATUS_LABELS.interview}</option>
+              <option value="interview">{STATUS_LABELS.interviewing}</option>
               <option value="offer">{STATUS_LABELS.offer}</option>
               <option value="rejected">{STATUS_LABELS.rejected}</option>
             </select>
