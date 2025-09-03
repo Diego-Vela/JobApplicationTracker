@@ -1,4 +1,16 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getToken } from "../api"; // <- from your api.ts
+
 export default function HomePage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (getToken()) {
+      navigate("/applications");
+    }
+  }, [navigate]);
+
   return (
     <main className="mx-auto w-full max-w-screen-lg min-w-[320px] px-4 py-10">
       <section className="text-center">

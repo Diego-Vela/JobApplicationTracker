@@ -4,9 +4,16 @@ export const API_URL = import.meta.env.VITE_API_URL as string;
 export function getToken() {
   return localStorage.getItem("token");
 }
-export function setToken(token: string) {
-  localStorage.setItem("token", token);
+export function setToken(newToken: string) {
+  if (newToken) {
+    localStorage.setItem("token", newToken);
+  } else {
+    localStorage.removeItem("token");
+  }
+  // 🔑 Tell listeners (Navbar) the auth state changed
+  window.dispatchEvent(new Event("auth-changed"));
 }
+
 export function clearToken() {
   localStorage.removeItem("token");
 }
@@ -20,7 +27,7 @@ function authHeaders(extra: HeadersInit = {}): HeadersInit {
   };
 }
 
-/** Optional: handle 401s in one place */
+/** handle 401s in one place */
 async function handleJsonOrThrow(res: Response, verb: string, path: string) {
   if (!res.ok) {
     if (res.status === 401) {

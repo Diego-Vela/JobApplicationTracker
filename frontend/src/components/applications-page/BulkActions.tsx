@@ -1,0 +1,80 @@
+// components/applications-page/BulkActions.tsx
+import { useState } from "react";
+import type { UIStatus } from "../types";
+
+type Props = {
+  selectedCount: number;
+  bulkBusy?: boolean;
+  onClearSelection: () => void;
+  onSelectAll: () => void;
+  onBulkDelete: () => void;
+  onBulkMove: (status: UIStatus) => void;
+};
+
+export default function BulkActions({
+  selectedCount,
+  bulkBusy,
+  onClearSelection,
+  onSelectAll,
+  onBulkDelete,
+  onBulkMove,
+}: Props) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-sm text-gray-600">{selectedCount} selected</span>
+
+      <button
+        onClick={onSelectAll}
+        className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-100"
+      >
+        Select all
+      </button>
+
+      <div className="relative">
+        <button
+          disabled={selectedCount === 0 || bulkBusy}
+          onClick={() => setOpen((o) => !o)}
+          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-100 disabled:opacity-60"
+        >
+          Change status
+        </button>
+        {open && (
+          <ul className="absolute z-20 mt-1 w-40 rounded-lg border bg-white p-1 shadow">
+            {(["applied", "interviewing", "offer", "rejected"] as UIStatus[]).map(
+              (opt) => (
+                <li key={opt}>
+                  <button
+                    className="w-full text-left rounded-md px-3 py-2 text-sm capitalize hover:bg-gray-100"
+                    onClick={() => {
+                      setOpen(false);
+                      onBulkMove(opt);
+                    }}
+                  >
+                    {opt}
+                  </button>
+                </li>
+              )
+            )}
+          </ul>
+        )}
+      </div>
+
+      <button
+        onClick={onBulkDelete}
+        disabled={selectedCount === 0 || bulkBusy}
+        className="rounded-lg border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+      >
+        Delete
+      </button>
+
+      <button
+        onClick={onClearSelection}
+        className="rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+      >
+        Cancel
+      </button>
+    </div>
+  );
+}

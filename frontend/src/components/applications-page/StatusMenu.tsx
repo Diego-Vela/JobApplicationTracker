@@ -6,20 +6,22 @@ import { API_URL, getToken } from "../../api";
 
 type Props = {
   appId: string;
-  value: UIStatus;                           // UI value
+  value: UIStatus;
   onChangeSuccess?: (next: UIStatus) => void;
+  disabled?: boolean; // NEW
 };
 
-export default function StatusMenu({ appId, value, onChangeSuccess }: Props) {
+export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: Props) {
   const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);   // ← add missing state
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (!open) return;
     function onDoc(e: MouseEvent) {
       const tgt = e.target as HTMLElement;
       if (!tgt.closest?.(`[data-menu-for="${appId}"]`)) setOpen(false);
     }
-    if (open) document.addEventListener("click", onDoc);
+    document.addEventListener("click", onDoc);
     return () => document.removeEventListener("click", onDoc);
   }, [open, appId]);
 
@@ -32,22 +34,31 @@ export default function StatusMenu({ appId, value, onChangeSuccess }: Props) {
         method: "POST",
         headers: { ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.detail || "Move failed");
-      }
-      onChangeSuccess?.(next);               // optimistic update
+      if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.detail || "Move failed");
+      onChangeSuccess?.(next);
     } finally {
       setBusy(false);
       setOpen(false);
     }
   }
 
+  // If disabled, show a passive pill
+  if (disabled) {
+    return (
+      <span
+        className="select-none rounded-full border px-3 py-1 text-xs capitalize text-gray-600 bg-gray-50"
+        aria-disabled="true"
+      >
+        {STATUS_LABELS[value]}
+      </span>
+    );
+  }
+
   return (
     <div className="relative" data-menu-for={appId}>
       <button
         onClick={() => !busy && setOpen((o) => !o)}
-        className="rounded-full border px-2.5 py-1 text-xs capitalize text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-60"
+        className="rounded-full border px-3 py-1 text-xs capitalize text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-60"
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={busy}
@@ -57,7 +68,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess }: Props) {
 
       {open && (
         <ul role="listbox" className="absolute right-0 z-20 mt-1 w-40 rounded-lg border bg-white p-1 shadow-lg">
-          {(["applied", "interviewing", "offer", "rejected"] as UIStatus[]).map((opt: UIStatus) => (
+          {(["applied", "interview", "offer", "rejected"] as UIStatus[]).map((opt) => (
             <li key={opt}>
               <button
                 className={[
