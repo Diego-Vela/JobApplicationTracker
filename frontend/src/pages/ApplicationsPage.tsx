@@ -1,11 +1,6 @@
 // src/pages/ApplicationsPage.tsx
 import { useState } from "react";
-import PageHeader from "../components/applications-page/PageHeader";
-import LoadingMessage from "../components/applications-page/LoadingMessage";
-import ErrorMessage from "../components/applications-page/ErrorMessage";
-import EmptyState from "../components/applications-page/EmptyState";
-import ApplicationList from "../components/applications-page/ApplicationList";
-import Tabs from "../components/applications-page/Tabs";
+import { PageHeader, LoadingMessage, ErrorMessage, EmptyState, ApplicationList, Tabs, SearchBar } from "../components/applications-page";
 
 import { useApplications } from "../hooks/useApplications";
 import type { TabKey, UIStatus } from "../components/types";
@@ -23,7 +18,10 @@ export default function ApplicationsPage() {
     bulkMoveStatus, bulkDelete,
     // display helper
     getDisplayedStatus,
-    setOverride
+    setOverride,
+    // search
+    search,
+    setSearch
   } = useApplications(active);
 
   return (
@@ -39,6 +37,9 @@ export default function ApplicationsPage() {
         onBulkMove={(status: UIStatus) => bulkMoveStatus(status)}
         onRefresh={reload}
       />
+
+      {/* Search within current tab */}
+      <SearchBar value={search} onChange={setSearch} />
 
       <Tabs value={active} onChange={(t) => { setActive(t); /* selection stays as-is */ }} />
 

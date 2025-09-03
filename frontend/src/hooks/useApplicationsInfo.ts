@@ -1,7 +1,7 @@
 // src/hooks/useApplicationInfo.ts
 import { useEffect, useState } from "react";
 import { apiGet, API_URL, getToken } from "../api";
-import type { Application, UIStatus } from "../components/applications-page";
+import type { Application, UIStatus } from "../components/types";
 import { UI_TO_API } from "../components/statusMaps";
 
 export function useApplicationInfo(id?: string) {

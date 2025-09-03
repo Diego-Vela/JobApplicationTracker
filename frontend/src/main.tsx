@@ -1,13 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import RootLayout from "./layouts/RootLayout";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import ApplicationsPage from "./pages/ApplicationsPage.tsx";
-import ApplicationNewPage from "./pages/ApplicationNewPage";
-import ApplicationInfoPage from "./pages/ApplicationInfoPage";
+import { RootLayout, HomePage, LoginPage, SignupPage, ApplicationsPage, ApplicationInfoPage, ApplicationNewPage, DocumentsPage } from "./index";
 
 import "./index.css";
 
@@ -22,6 +16,7 @@ const router = createBrowserRouter([
       { path: "applications", element: <ApplicationsPage /> }, // /applications
       { path: "applications/new", element: <ApplicationNewPage /> }, // /applications/new
       { path: "applications/:id", element: <ApplicationInfoPage /> }, // /applications/:id
+      { path: "documents", element: <DocumentsPage /> }, // /documents
     ],
   },
 ]);

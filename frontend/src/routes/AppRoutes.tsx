@@ -5,6 +5,7 @@ import HomePage from "../pages/HomePage";
 import ApplicationsPage from "../pages/ApplicationsPage";
 import LoginPage from "../pages/LoginPage";
 import SignupPage from "../pages/SignupPage";
+import DocumentsPage from "../pages/DocumentsPage";
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
       {/* Private pages: require token */}
       <Route element={<ProtectedRoute />}>
         <Route path="/applications" element={<ApplicationsPage />} />
+        <Route path="/documents" element={<DocumentsPage />} />
         {/* If needed, add more protected routes here */}
       </Route>
     </Routes>

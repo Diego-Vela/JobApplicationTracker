@@ -1,7 +1,7 @@
 // src/pages/ApplicationInfoPage.tsx
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { UIStatus, Application } from "../components/applications-page";
+import type { UIStatus, Application } from "../components/types";
 import { ApplicationHeader, ApplicationStatusSelect, ApplicationDetails, NotesList, NoteForm } from "../components/application-info-page";
 import { useApplicationInfo } from "../hooks/useApplicationsInfo";
 import { useNotes } from "../hooks/useNotes";
@@ -26,7 +26,7 @@ export default function ApplicationInfoPage() {
 
   const currentUIStatus = useMemo<UIStatus | null>(() => {
     if (!app?.status) return null;
-    return API_TO_UI[app.status];
+    return API_TO_UI[app.status as keyof typeof API_TO_UI];
   }, [app?.status]);
 
   function beginEdit() {
