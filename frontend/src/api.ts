@@ -78,3 +78,16 @@ export async function apiDelete<T>(path: string): Promise<T> {
   });
   return handleJsonOrThrow(res, "DELETE", path);
 }
+
+export async function apiSend<T>(path: string, method: string, body?: any): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      ...(body ? { "Content-Type": "application/json" } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
