@@ -14,10 +14,10 @@ export default function DocumentsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Documents</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-4xl font-bold">Documents</h1>
+          <p className="text-lg text-muted-foreground">
             Upload and manage up to {MAX_PER_TYPE} Resumes and {MAX_PER_TYPE} CVs per profile.
           </p>
         </div>
@@ -26,12 +26,12 @@ export default function DocumentsPage() {
       <div className="mb-6 inline-flex overflow-hidden rounded-2xl border bg-background">
         <button
           onClick={() => setTab("resume")}
-          className={`px-4 py-2 text-sm font-medium transition ${tab === "resume" ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
+          className={`px-4 py-2 text-xl font-medium transition ${tab === "resume" ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
           aria-pressed={tab === "resume"}
         >Resumes</button>
         <button
           onClick={() => setTab("cv")}
-          className={`px-4 py-2 text-sm font-medium transition ${tab === "cv" ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
+          className={`px-4 py-2 text-xl font-medium transition ${tab === "cv" ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
           aria-pressed={tab === "cv"}
         >CVs</button>
       </div>
@@ -59,7 +59,7 @@ export default function DocumentsPage() {
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-1 lg:grid-cols-1">
         {current.loading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex animate-pulse items-center gap-3 rounded-2xl border p-4">

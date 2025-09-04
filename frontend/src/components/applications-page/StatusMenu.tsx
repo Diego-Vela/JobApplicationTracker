@@ -46,7 +46,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
   if (disabled) {
     return (
       <span
-        className="select-none rounded-full border px-3 py-1 text-xs capitalize text-gray-600 bg-gray-50"
+        className="select-none rounded-full border px-3 py-1 text-md capitalize text-gray-600 bg-white"
         aria-disabled="true"
       >
         {STATUS_LABELS[value]}
@@ -58,7 +58,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
     <div className="relative" data-menu-for={appId}>
       <button
         onClick={() => !busy && setOpen((o) => !o)}
-        className="rounded-full border px-3 py-1 text-xs capitalize text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-60"
+        className="rounded-full border px-3 py-1 text-md capitalize text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-60"
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={busy}
@@ -68,11 +68,11 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
 
       {open && (
         <ul role="listbox" className="absolute right-0 z-20 mt-1 w-40 rounded-lg border bg-white p-1 shadow-lg">
-          {(["applied", "interview", "offer", "rejected"] as UIStatus[]).map((opt) => (
+          {(["applied", "interviewing", "offer", "rejected"] as UIStatus[]).map((opt) => (
             <li key={opt}>
               <button
                 className={[
-                  "w-full text-left rounded-md px-3 py-2 text-sm capitalize hover:bg-gray-100",
+                  "w-full text-left rounded-md px-3 py-2 text-lg capitalize hover:bg-gray-100",
                   opt === value ? "font-semibold" : "",
                 ].join(" ")}
                 onClick={() => move(opt)}

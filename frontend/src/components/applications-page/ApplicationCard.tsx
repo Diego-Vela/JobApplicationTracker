@@ -40,18 +40,18 @@ export default function ApplicationCard({
                 onToggleSelected?.(app.application_id);
               }}
               onClick={(e) => e.stopPropagation()} // guard against parent click
-              className="mt-1 size-4 accent-brand"
+              className="mt-1 size-4 accent-brand self-center"
               aria-label={`Select ${app.company}`}
             />
           )}
           <div>
-            <h3 className="text-lg font-semibold">{app.company}</h3>
-            {app.job_title && <p className="text-sm text-gray-600">{app.job_title}</p>}
+            <h3 className="text-2xl font-semibold">{app.company}</h3>
+            {app.job_title && <p className="text-lg text-gray-600">{app.job_title}</p>}
           </div>
         </div>
       </div>
       {app.applied_date && (
-        <p className="mt-2 text-sm text-gray-500">Applied: {formatDate(app.applied_date)}</p>
+        <p className="mt-2 text-lg text-gray-500">Applied: {formatDate(app.applied_date)}</p>
       )}
     </div>
   );

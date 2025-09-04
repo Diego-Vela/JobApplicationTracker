@@ -23,11 +23,11 @@ export default function BulkActions({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-gray-600">{selectedCount} selected</span>
+      <span className="text-lg text-gray-600">{selectedCount} selected</span>
 
       <button
         onClick={onSelectAll}
-        className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-100"
+        className="rounded-lg border px-3 py-2 text-lg hover:bg-gray-100"
       >
         Select all
       </button>
@@ -36,7 +36,7 @@ export default function BulkActions({
         <button
           disabled={selectedCount === 0 || bulkBusy}
           onClick={() => setOpen((o) => !o)}
-          className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-100 disabled:opacity-60"
+          className="rounded-lg border px-3 py-2 text-lg hover:bg-gray-100 disabled:opacity-60"
         >
           Change status
         </button>
@@ -46,7 +46,7 @@ export default function BulkActions({
               (opt) => (
                 <li key={opt}>
                   <button
-                    className="w-full text-left rounded-md px-3 py-2 text-sm capitalize hover:bg-gray-100"
+                    className="w-full text-left rounded-md px-3 py-2 text-lg capitalize hover:bg-gray-100"
                     onClick={() => {
                       setOpen(false);
                       onBulkMove(opt);
@@ -64,14 +64,14 @@ export default function BulkActions({
       <button
         onClick={onBulkDelete}
         disabled={selectedCount === 0 || bulkBusy}
-        className="rounded-lg border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+        className="rounded-lg border border-red-300 px-3 py-2 text-lg text-red-700 hover:bg-red-50 disabled:opacity-60"
       >
         Delete
       </button>
 
       <button
         onClick={onClearSelection}
-        className="rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+        className="rounded-lg px-3 py-2 text-lg hover:bg-gray-100"
       >
         Cancel
       </button>

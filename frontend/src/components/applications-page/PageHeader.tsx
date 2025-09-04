@@ -29,13 +29,12 @@ export default function PageHeader({
 }: Props) {
   return (
     <div className="mb-4 flex items-center justify-between gap-3">
-      <h1 className="text-2xl font-bold">Applications</h1>
-
+      <h1 className="text-4xl font-bold">Applications</h1>
       {!selectionMode ? (
         <div className="flex items-center gap-2">
           <button
             onClick={onToggleSelectionMode}
-            className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-100"
+            className="rounded-lg border px-3 py-2 text-xl hover:bg-gray-100"
           >
             Edit
           </button>

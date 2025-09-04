@@ -54,15 +54,15 @@ export function Uploader({
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UploadCloud className="h-5 w-5" />
-          <h2 className="text-base font-medium">Upload {kind === "resume" ? "Resume" : "CV"}</h2>
+          <h2 className="text-xl font-medium">Upload {kind === "resume" ? "Resume" : "CV"}</h2>
         </div>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-lg text-gray-600 text-muted-foreground">
           Max {MAX_PER_TYPE} {kind === "resume" ? "resumes" : "CVs"}
         </span>
       </div>
 
       {!canUpload && (
-        <p className="mb-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+        <p className="mb-2 rounded-lg bg-amber-50 p-2 text-xl text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
           Limit reached. Delete one to upload more.
         </p>
       )}
@@ -74,21 +74,21 @@ export function Uploader({
           accept={ACCEPTED_MIME.join(",")}
           onChange={(e) => handleChoose(e.target.files?.[0] || null)}
           disabled={disabled}
-          className="block w-full cursor-pointer file:cursor-pointer rounded-xl border p-2 text-sm file:mr-3 file:rounded-lg file:border file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
+          className="block w-full cursor-pointer file:cursor-pointer rounded-xl border p-2 text-lg file:mr-3 file:rounded-lg file:border file:bg-muted file:px-3 file:py-1.5 file:text-lg file:font-medium"
         />
         <input
           type="text"
-          placeholder="Optional label (e.g., 'Software Engineer', 'Academic CV')"
+          placeholder="Optional label (e.g. 'Academic CV')"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           disabled={uploading}
-          className="w-full rounded-xl border p-2 text-sm"
+          className="w-full rounded-xl border p-2 text-lg"
         />
         <button
           type="button"
           onClick={handleUpload}
           disabled={disabled || !selectedFile}
-          className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-lg font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
         >
           {uploading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading…</>) : (<>Upload</>)}
         </button>
