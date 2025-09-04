@@ -69,7 +69,7 @@ export default function ApplicationInfoPage() {
   return (
     <div className="mx-auto w-full max-w-screen-md min-w-[320px] px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <Link to="/applications" className="text-brand hover:underline">← Back to Applications</Link>
+        <Link to="/applications" className="text-brand text-lg hover:underline">← Back to Applications</Link>
         {app && (
           <ApplicationStatusSelect
             value={currentUIStatus}
@@ -79,11 +79,11 @@ export default function ApplicationInfoPage() {
       </div>
 
       {loading && (
-        <div className="rounded-lg border bg-white p-6 text-center text-gray-600">Loading…</div>
+        <div className="rounded-lg border bg-white p-6 text-center text-gray-600 text-lg">Loading…</div>
       )}
 
       {err && !loading && (
-        <div className="rounded-lg border bg-white p-6 text-center text-red-600">{err}</div>
+        <div className="rounded-lg border bg-white p-6 text-center text-red-600 text-lg">{err}</div>
       )}
 
       {!loading && !err && app && (
@@ -96,14 +96,14 @@ export default function ApplicationInfoPage() {
 
               {app.job_description && (
                 <div className="pt-2">
-                  <h2 className="mb-1 text-sm font-semibold">Job Description</h2>
-                  <p className="whitespace-pre-wrap text-sm text-gray-700">{app.job_description}</p>
+                  <h2 className="mb-1 text-md font-semibold">Job Description</h2>
+                  <p className="whitespace-pre-wrap text-lg text-gray-700">{app.job_description}</p>
                 </div>
               )}
 
               {/* Notes */}
               <div className="pt-2">
-                <h2 className="mb-2 text-sm font-semibold">Notes</h2>
+                <h2 className="mb-2 text-md font-semibold">Notes</h2>
                 <NotesList
                   notes={notes}
                   loading={loadingNotes}
@@ -117,7 +117,7 @@ export default function ApplicationInfoPage() {
               </div>
 
               <div className="pt-2">
-                <button onClick={beginEdit} className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-100">
+                <button onClick={beginEdit} className="rounded-lg border px-4 py-2 text-lg hover:bg-gray-100">
                   Edit
                 </button>
               </div>
@@ -126,27 +126,27 @@ export default function ApplicationInfoPage() {
             <form onSubmit={saveEdit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Company</label>
+                  <label className="mb-1 block text-md font-medium text-gray-600">Company</label>
                   <input value={company} onChange={(e) => setCompany(e.target.value)} className="w-full rounded-md border px-3 py-2" required />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Job Title</label>
+                  <label className="mb-1 block text-md font-medium text-gray-600">Job Title</label>
                   <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="w-full rounded-md border px-3 py-2" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Applied Date</label>
+                  <label className="mb-1 block text-md font-medium text-gray-600">Applied Date</label>
                   <input type="date" value={appliedDate} onChange={(e) => setAppliedDate(e.target.value)} className="w-full rounded-md border px-3 py-2" />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">Job Description</label>
+                <label className="mb-1 block text-md font-medium text-gray-600">Job Description</label>
                 <textarea rows={5} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} className="w-full rounded-md border px-3 py-2" placeholder="Update the job description or notes…" />
               </div>
 
               <div className="flex items-center gap-2 pt-2">
-                <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95">Save</button>
-                <button type="button" onClick={cancelEdit} className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-100">Cancel</button>
+                <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-lg font-medium text-white hover:brightness-95">Save</button>
+                <button type="button" onClick={cancelEdit} className="rounded-lg border px-4 py-2 text-lg hover:bg-gray-100">Cancel</button>
               </div>
             </form>
           )}

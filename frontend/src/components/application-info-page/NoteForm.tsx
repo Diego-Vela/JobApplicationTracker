@@ -30,15 +30,15 @@ export function NoteForm({ onSubmit }: Props) {
         rows={3}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="w-full rounded-md border px-3 py-2 text-sm"
+        className="w-full rounded-md border px-3 py-2 text-lg"
         placeholder="Add a note about this application…"
       />
-      {err && <p className="text-sm text-red-600 break-words">{err}</p>}
+      {err && <p className="text-lg text-red-600 break-words">{err}</p>}
       <div className="flex items-center gap-2">
         <button
           type="submit"
           disabled={saving || !value.trim()}
-          className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60 hover:brightness-95"
+          className="rounded-lg bg-brand px-3 py-1.5 text-lg font-medium text-white disabled:opacity-60 hover:brightness-95"
         >
           {saving ? "Saving…" : "Add note"}
         </button>

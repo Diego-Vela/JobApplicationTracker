@@ -46,7 +46,7 @@ export default function Navbar() {
       to={to}
       className={({ isActive }) =>
         [
-          "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[clamp(0.95rem,1.6vw,1.0625rem)] transition",
+          "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[clamp(1.25rem,1.6vw,1.0625rem)] transition",
           isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10",
         ].join(" ")
       }
@@ -66,14 +66,14 @@ export default function Navbar() {
         {/* Brand */}
         <Link
           to="/"
-          className="font-bold text-[clamp(1.125rem,2vw,1.5rem)]"
+          className="font-bold text-[clamp(1.5rem,3vw,2.25rem)]"
           onClick={() => setMenuOpen(false)}
         >
           Jobblet
         </Link>
 
         {/* Tabs (desktop) — only when logged in */}
-        <div className="hidden items-center gap-1 sm:flex">
+  <div className="hidden items-center gap-1 md:flex">
           {isLoggedIn && (
             <>
               <TabLink to="/applications" label="Applications" Icon={Folder} />
@@ -84,11 +84,11 @@ export default function Navbar() {
         </div>
 
         {/* Auth actions (desktop) */}
-        <div className="hidden gap-2 sm:flex">
+  <div className="hidden gap-2 md:flex">
           {isLoggedIn ? (
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[clamp(0.95rem,1.6vw,1.0625rem)] text-blue-700 transition hover:bg-gray-100"
+              className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[clamp(1.25rem,1.6vw,1.0625rem)] text-blue-700 transition hover:bg-gray-100"
             >
               <LogOut className="h-4 w-4" aria-hidden />
               <span>Sign out</span>
@@ -97,14 +97,14 @@ export default function Navbar() {
             <>
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[clamp(0.95rem,1.6vw,1.0625rem)] hover:brightness-95"
+                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[clamp(1.25rem,1.6vw,1.0625rem)] hover:brightness-95"
               >
                 <LogIn className="h-4 w-4" aria-hidden />
                 <span>Log in</span>
               </Link>
               <Link
                 to="/signup"
-                className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[clamp(0.95rem,1.6vw,1.0625rem)] text-blue-700 hover:bg-gray-100"
+                className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[clamp(1.25rem,1.6vw,1.0625rem)] text-blue-700 hover:bg-gray-100"
               >
                 <UserPlus className="h-4 w-4" aria-hidden />
                 <span>Sign up</span>
@@ -115,7 +115,7 @@ export default function Navbar() {
 
         {/* Mobile menu toggle */}
         <button
-          className="sm:hidden rounded-md p-2 focus:outline-none"
+          className="md:hidden rounded-md p-2 focus:outline-none"
           aria-label="Toggle menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((v) => !v)}

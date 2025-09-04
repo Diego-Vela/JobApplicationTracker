@@ -27,9 +27,9 @@ export function NotesList({
   const [saving, setSaving] = useState(false);
   const [localErr, setLocalErr] = useState<string | null>(null);
 
-  if (error) return <p className="text-sm text-red-600 break-words">{error}</p>;
-  if (loading) return <p className="text-sm text-gray-600">Loading notes…</p>;
-  if (!notes.length) return <p className="text-sm text-gray-500 mb-3">No notes yet.</p>;
+  if (error) return <p className="text-lg text-red-600 break-words">{error}</p>;
+  if (loading) return <p className="text-lg text-gray-600">Loading notes…</p>;
+  if (!notes.length) return <p className="text-lg text-gray-500 mb-3">No notes yet.</p>;
 
   function askDelete(noteId: string) {
     if (!onDelete) return;
@@ -80,7 +80,7 @@ export function NotesList({
       {notes.map((n) => {
         const isEditing = editingId === n.note_id;
         return (
-          <div key={n.note_id} className="rounded-xl border bg-gray-50 p-3 text-sm shadow-sm">
+          <div key={n.note_id} className="rounded-xl border bg-gray-50 p-3 text-lg shadow-sm">
             {/* row with text + icons (wrap-friendly) */}
             <div className="flex items-start gap-2">
               {/* text column */}
@@ -95,18 +95,18 @@ export function NotesList({
                       rows={3}
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
+                      className="w-full rounded-md border px-3 py-2 text-lg"
                       placeholder="Update your note…"
                     />
                     {localErr && (
-                      <p className="text-sm text-red-600 break-words">{localErr}</p>
+                      <p className="text-lg text-red-600 break-words">{localErr}</p>
                     )}
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => saveEdit(n.note_id)}
                         disabled={saving || !draft.trim()}
-                        className="inline-flex items-center gap-1 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60 hover:brightness-95"
+                        className="inline-flex items-center gap-1 rounded-lg bg-brand px-3 py-1.5 text-lg font-medium text-white disabled:opacity-60 hover:brightness-95"
                         aria-label="Save"
                         title="Save"
                       >
@@ -117,7 +117,7 @@ export function NotesList({
                         type="button"
                         onClick={cancelEdit}
                         disabled={saving}
-                        className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-100"
+                        className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-lg hover:bg-gray-100"
                         aria-label="Cancel"
                         title="Cancel"
                       >
@@ -158,7 +158,7 @@ export function NotesList({
               )}
             </div>
 
-            <div className="mt-2 text-[11px] uppercase tracking-wide text-gray-500">
+            <div className="mt-2 text-lg uppercase tracking-wide text-gray-500">
               {fmtDate(n.created_at)}
             </div>
           </div>

@@ -9,11 +9,11 @@ type Props = {
 export function ApplicationStatusSelect({ value, onChange }: Props) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-600">Status:</span>
+      <span className="text-lg text-gray-600">Status:</span>
       <select
         value={value ?? "applied"}
         onChange={(e) => onChange(e.target.value as UIStatus)}
-        className="rounded-md border px-3 py-1.5 text-sm"
+        className="rounded-md border px-3 py-1.5 text-lg"
       >
         <option value="applied">{STATUS_LABELS.applied}</option>
         <option value="interviewing">{STATUS_LABELS.interviewing}</option>
