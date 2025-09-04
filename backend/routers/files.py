@@ -5,8 +5,10 @@ from ..deps import get_db, get_current_user_id
 from .. import models, schemas
 from botocore.config import Config
 from urllib.parse import urlparse
+from urllib.parse import quote as urlquote
 from botocore.exceptions import ClientError
 from typing import Literal
+
 
 # NEW: imports for S3 presign + utils
 import os, re, uuid, mimetypes, boto3, requests
@@ -28,6 +30,27 @@ s3 = boto3.client("s3", region_name=S3_REGION, config=Config(signature_version="
 
 # -------------------- Helpers --------------------
 SAFE_CHARS = re.compile(r"[^A-Za-z0-9._-]+")
+
+def safe_download_name(name: str, fallback_ext: str = "") -> str:
+    """
+    Sanitize a suggested download name.
+    If it has no extension, append fallback_ext (e.g., ".pdf").
+    """
+    name = (name or "download").strip().strip(".")
+    # very permissive: keep common filename chars
+    name = re.sub(r'[^A-Za-z0-9._\- ()]+', "_", name)
+    if fallback_ext and not os.path.splitext(name)[1]:
+        name += fallback_ext
+    # cap length to avoid header issues
+    return name[:120] or f"download{fallback_ext}"
+
+def content_disposition_for(name: str) -> str:
+    """
+    RFC 5987 compatible header with ASCII fallback and UTF-8 filename*.
+    """
+    ascii_fallback = name.encode("ascii", "ignore").decode() or "download"
+    utf8_encoded = urlquote(name, safe="")
+    return f'attachment; filename="{ascii_fallback}"; filename*=UTF-8\'\'{utf8_encoded}'
 
 def sanitize_filename(name: str) -> str:
     base = os.path.basename(name).strip()
@@ -126,15 +149,13 @@ def presign_get(
     db: Session = Depends(get_db),
 ):
     """
-    Return a short-lived signed GET URL for a private object.
-    Priority of inputs:
-    1) kind + item_id  -> look up in DB and derive key from stored URL
-    2) url              -> derive key
-    3) key              -> use as-is
-
-    Enforces ownership: key must start with '<user_id>/' or DB row must belong to user.
+    Return a short-lived, signed GET URL for downloading a private object.
+    Preferred inputs: kind + item_id (so we can use label/file_name).
+    Falls back to url/key if needed (ownership still enforced).
     """
     obj_url: str | None = None
+    label: str | None = None
+    original_name: str | None = None
 
     if kind and item_id:
         if kind == "resume":
@@ -145,6 +166,8 @@ def presign_get(
             if not rec:
                 raise HTTPException(status_code=404, detail="Resume not found")
             obj_url = rec.resume_url
+            label = getattr(rec, "label", None)
+            original_name = rec.file_name
         elif kind == "cv":
             rec = db.query(models.CV).filter(
                 models.CV.cv_id == item_id,
@@ -153,33 +176,48 @@ def presign_get(
             if not rec:
                 raise HTTPException(status_code=404, detail="CV not found")
             obj_url = rec.cv_url
+            label = getattr(rec, "label", None)
+            original_name = rec.file_name
         else:
             raise HTTPException(status_code=400, detail="Invalid kind")
 
         if not obj_url:
             raise HTTPException(status_code=400, detail="No URL stored for this item")
         key = key_from_url(obj_url)
+
     elif url:
         key = key_from_url(url)
+
     elif not key:
         raise HTTPException(status_code=400, detail="Provide (kind & item_id) or url or key")
 
-    # Ownership check when we didn’t fetch from DB (url/key path)
+    # Ownership check (for url/key path)
     if not key.startswith(f"{user_id}/"):
-        # If they provided url/key directly and it doesn't belong to them, block it
         raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Decide final download name:
+    # 1) prefer label (user-friendly), else original file_name
+    # 2) ensure it has the right extension (fall back from key)
+    _, key_ext = os.path.splitext(key)
+    # If I know the content type, we could map to an ext; key_ext is fine for now
+    preferred = (label or original_name or os.path.basename(key)) or "download"
+    friendly_name = safe_download_name(preferred, fallback_ext=key_ext)
 
     try:
         signed = s3.generate_presigned_url(
             "get_object",
-            Params={"Bucket": S3_BUCKET, "Key": key},
+            Params={
+                "Bucket": S3_BUCKET,
+                "Key": key,
+                # Force a friendly filename in the browser's Save dialog:
+                "ResponseContentDisposition": content_disposition_for(friendly_name),
+            },
             ExpiresIn=60 * 5,  # 5 minutes
         )
         return {"url": signed}
     except ClientError as e:
         msg = e.response.get("Error", {}).get("Message", "Cannot presign download")
         raise HTTPException(status_code=500, detail=msg)
-
 # -------------------- Resumes --------------------
 @router.post("/resumes", response_model=schemas.ResumeOut, status_code=201)
 def create_resume(meta: schemas.FileMetaIn, user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
