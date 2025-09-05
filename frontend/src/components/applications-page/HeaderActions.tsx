@@ -11,9 +11,9 @@ export default function HeaderActions({ onRefresh }: Props) {
     <div className="flex items-center gap-2">
       <button
         onClick={onRefresh}
-        className="rounded-lg border px-3 py-2 text-xl hover:bg-gray-100 flex items-center gap-2"
+        className="rounded-lg border border-green-600 px-3 py-2 text-xl text-green-800 hover:bg-green-200 flex items-center gap-2"
       >
-        <RefreshCw className="h-5 w-5" aria-hidden /> {/* Refresh icon */}
+        <RefreshCw className="h-5 w-5 text-green-700" aria-hidden /> {/* Refresh icon */}
         Refresh
       </button>
       <Link
