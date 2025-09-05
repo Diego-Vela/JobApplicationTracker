@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { apiGet, apiSend } from "../api";
 import type { DocumentItem, DocType, ResumeOut, CVOut } from "../components/types";
-import{ MAX_PER_TYPE } from "../components/types";
+import{ MAX_RESUMES, MAX_CVS } from "../components/types";
 
 /** Upload a file to S3 using a presigned POST from backend */
 export async function uploadToStorage(file: File): Promise<{ url: string }> {
@@ -81,7 +81,8 @@ export function useDocs(kind: DocType) {
     }
   };
 
-  const canUpload = items.length < MAX_PER_TYPE;
+  const maximumUpload = kind === "resume" ? MAX_RESUMES : MAX_CVS;
+  const canUpload = items.length < maximumUpload;
 
   const uploadMeta = async (fileUrl: string, fileName: string, label?: string) => {
     const created = await apiSend<ResumeOut | CVOut>(listPath, "POST", {
@@ -100,5 +101,5 @@ export function useDocs(kind: DocType) {
     setItems((prev) => [mapped, ...prev]);
   };
 
-  return { items, loading, error, uploading, setUploading, refresh, remove, canUpload, uploadMeta };
+  return { items, loading, error, uploading, setUploading, refresh, remove, canUpload, uploadMeta, maximumUpload };
 }

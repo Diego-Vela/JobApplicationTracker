@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { UploadCloud, Loader2, AlertCircle } from "lucide-react";
-import { ACCEPTED_MIME, MAX_PER_TYPE, MAX_SIZE_BYTES } from "../types";
+import { ACCEPTED_MIME, MAX_RESUMES, MAX_CVS, MAX_SIZE_BYTES } from "../types";
 import type { DocType } from "../types";
 
 export function Uploader({
@@ -57,7 +57,7 @@ export function Uploader({
           <h2 className="text-xl font-medium">Upload {kind === "resume" ? "Resume" : "CV"}</h2>
         </div>
         <span className="text-lg text-gray-600 text-muted-foreground">
-          Max {MAX_PER_TYPE} {kind === "resume" ? "resumes" : "CVs"}
+          Max {kind === "resume" ? MAX_RESUMES : MAX_CVS} {kind === "resume" ? "resumes" : "CVs"}
         </span>
       </div>
 

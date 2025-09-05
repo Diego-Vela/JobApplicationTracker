@@ -4,7 +4,7 @@ import { getToken, clearToken } from "../api";
 import {
   Folder,
   FileText,
-  User as UserIcon,
+  Info as InfoIcon,
   LogOut,
   LogIn,
   UserPlus,
@@ -59,6 +59,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-10 bg-brand text-white shadow">
+
       <nav
         className="mx-auto flex w-full max-w-screen-lg min-w-[320px] items-center justify-between px-4 py-3"
         aria-label="Primary"
@@ -66,25 +67,25 @@ export default function Navbar() {
         {/* Brand */}
         <Link
           to="/"
-          className="font-bold text-[clamp(1.5rem,3vw,2.25rem)]"
+          className="font-bold text-[clamp(1.5rem,3vw,2.25rem)] flex-1 text-left"
           onClick={() => setMenuOpen(false)}
         >
           Jobblet
         </Link>
 
         {/* Tabs (desktop) — only when logged in */}
-  <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-1 md:flex flex-1 justify-center">
           {isLoggedIn && (
             <>
               <TabLink to="/applications" label="Applications" Icon={Folder} />
               <TabLink to="/documents" label="Documents" Icon={FileText} />
-              <TabLink to="/profile" label="Profile" Icon={UserIcon} />
+              <TabLink to="/about" label="About" Icon={InfoIcon} />
             </>
           )}
         </div>
 
         {/* Auth actions (desktop) */}
-  <div className="hidden gap-2 md:flex">
+        <div className="hidden gap-2 md:flex flex-1 justify-end">
           {isLoggedIn ? (
             <button
               onClick={handleSignOut}
@@ -160,7 +161,7 @@ export default function Navbar() {
                   <span>Documents</span>
                 </NavLink>
                 <NavLink
-                  to="/profile"
+                  to="/about"
                   onClick={() => setMenuOpen(false)}
                   className={({ isActive }) =>
                     [
@@ -169,7 +170,7 @@ export default function Navbar() {
                     ].join(" ")
                   }
                 >
-                  <UserIcon className="h-4 w-4" aria-hidden />
+                  <InfoIcon className="h-4 w-4" aria-hidden />
                   <span>Profile</span>
                 </NavLink>
               </div>

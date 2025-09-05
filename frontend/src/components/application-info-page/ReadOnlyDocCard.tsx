@@ -1,27 +1,12 @@
+// src/components/documents-page/ReadOnlyDocCard.tsx
 import { useMemo, useState } from "react";
-import { FileText, Download, Loader2, Trash2 } from "lucide-react";
+import { FileText, Download, Loader2 } from "lucide-react";
 import type { DocumentItem } from "../types";
 import { presignDownload } from "../../hooks/useDocs";
 import { apiGet } from "../../api";
 
-export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => void }) {
-  const [busy, setBusy] = useState(false);
+export function ReadOnlyDocCard({ doc }: { doc: DocumentItem }) {
   const [downloading, setDownloading] = useState(false);
-
-  const handleDelete = async () => {
-    const message =
-      doc.type === "resume"
-        ? "Are you sure you want to delete this resume?\n\nAll linked applications that use it will have their attached resume set to null."
-        : "Are you sure you want to delete this CV?\n\nIt will be permanently removed.";
-    if (!window.confirm(message)) return;
-
-    setBusy(true);
-    try {
-      await onDelete();
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const handleDownload = async () => {
     try {
@@ -36,7 +21,10 @@ export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => 
     }
   };
 
-  const ext = useMemo(() => doc.name.split(".").pop()?.toUpperCase() || "", [doc.name]);
+  const ext = useMemo(
+    () => doc.name.split(".").pop()?.toUpperCase() || "",
+    [doc.name]
+  );
 
   return (
     <div className="rounded-2xl border p-4">
@@ -62,7 +50,7 @@ export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => 
           </div>
         </div>
 
-        {/* Right: file type + actions */}
+        {/* Right: file type + download */}
         <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
           <span className={`rounded-md ${ ext === "PDF" ? "text-red-400" : "text-blue-400"} px-2 py-1 text-lg font-medium text-muted-foreground`}>
             {ext || (doc.type === "resume" ? "RESUME" : "CV")}
@@ -100,21 +88,6 @@ export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => 
               Preview
             </button>
           )}
-
-          {/* Delete button */}
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={busy}
-            className="inline-flex items-center gap-1 rounded-xl border px-2.5 py-1.5 text-lg font-medium text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-60"
-          >
-            {busy ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Trash2 className="h-3.5 w-3.5" />
-            )}
-            Delete
-          </button>
         </div>
       </div>
     </div>

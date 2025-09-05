@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { RootLayout, HomePage, LoginPage, SignupPage, ApplicationsPage, ApplicationInfoPage, ApplicationNewPage, DocumentsPage } from "./index";
+import { RootLayout, HomePage, LoginPage, SignupPage, ApplicationsPage, ApplicationInfoPage, ApplicationNewPage, DocumentsPage, AboutPage } from "./index";
 
 import "./index.css";
 
@@ -17,6 +17,7 @@ const router = createBrowserRouter([
       { path: "applications/new", element: <ApplicationNewPage /> }, // /applications/new
       { path: "applications/:id", element: <ApplicationInfoPage /> }, // /applications/:id
       { path: "documents", element: <DocumentsPage /> }, // /documents
+      { path: "about", element: <AboutPage /> }, // /about
     ],
   },
 ]);

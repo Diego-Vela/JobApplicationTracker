@@ -140,7 +140,7 @@ export function NotesList({
                       title="Edit note"
                       aria-label="Edit note"
                     >
-                      <Edit size={16} className="text-gray-600" />
+                      <Edit size={18} className="text-gray-600" />
                     </button>
                   )}
                   {onDelete && (
@@ -151,14 +151,14 @@ export function NotesList({
                       title="Delete note"
                       aria-label="Delete note"
                     >
-                      <Trash2 size={16} className="text-red-600" />
+                      <Trash2 size={18} className="text-red-600" />
                     </button>
                   )}
                 </div>
               )}
             </div>
 
-            <div className="mt-2 text-lg uppercase tracking-wide text-gray-500">
+            <div className="mt-2 text-sm uppercase text-gray-500">
               {fmtDate(n.created_at)}
             </div>
           </div>

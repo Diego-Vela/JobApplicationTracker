@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
-import { MAX_PER_TYPE, MAX_SIZE_BYTES, ACCEPTED_MIME } from "../components/types";
+import { MAX_RESUMES, MAX_CVS, MAX_SIZE_BYTES, ACCEPTED_MIME } from "../components/types";
 import type { DocType } from "../components/types";
 import { useDocs, uploadToStorage } from "../hooks/useDocs";
 import { Uploader } from "../components/documents-page/Uploader";
@@ -18,7 +18,7 @@ export default function DocumentsPage() {
         <div>
           <h1 className="text-4xl font-bold">Documents</h1>
           <p className="text-lg text-muted-foreground">
-            Upload and manage up to {MAX_PER_TYPE} Resumes and {MAX_PER_TYPE} CVs per profile.
+            Upload and manage up to {MAX_RESUMES} Resumes and {MAX_CVS} CVs per profile.
           </p>
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function DocumentsPage() {
         uploading={current.uploading}
         setUploading={current.setUploading}
         onUploaded={async (file, label) => {
-          if (!current.canUpload) throw new Error(`Limit reached (max ${MAX_PER_TYPE}). Delete one to upload more.`);
+          if (!current.canUpload) throw new Error(`Limit reached (max ${current.maximumUpload}). Delete one to upload more.`);
           if (!ACCEPTED_MIME.includes(file.type)) throw new Error("Unsupported file type. Use PDF, DOC, or DOCX.");
           if (file.size > MAX_SIZE_BYTES) throw new Error("Max file size is 10 MB.");
 

@@ -25,6 +25,10 @@ export type AppNote = {
   created_at: string; // ISO
 };
 
+export const MAX_NUM_NOTES = 15;
+export const MAX_NOTES_LENGTH = 500;
+export const MAX_DESCRIPTION_LENGTH = 1500;
+
 // ---------------------------------- Document-related types ---------------------------------- //
 export type DocType = "resume" | "cv";
 
@@ -59,5 +63,6 @@ export const ACCEPTED_MIME = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
-export const MAX_PER_TYPE = 5;
+export const MAX_RESUMES = 5;
+export const MAX_CVS = 15;
 export const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB

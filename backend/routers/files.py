@@ -145,6 +145,7 @@ def presign_get(
     item_id: str | None = None,
     key: str | None = None,
     url: str | None = None,
+    disposition: Literal["inline", "attachment"] = "attachment",  # NEW
     user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
@@ -209,10 +210,13 @@ def presign_get(
             Params={
                 "Bucket": S3_BUCKET,
                 "Key": key,
-                # Force a friendly filename in the browser's Save dialog:
-                "ResponseContentDisposition": content_disposition_for(friendly_name),
+                # Use requested disposition
+                "ResponseContentDisposition": (
+                    f'{disposition}; filename="{friendly_name}"; '
+                    f"filename*=UTF-8''{urlquote(friendly_name, safe='')}"
+                ),
             },
-            ExpiresIn=60 * 5,  # 5 minutes
+            ExpiresIn=60 * 5,
         )
         return {"url": signed}
     except ClientError as e:

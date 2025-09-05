@@ -6,6 +6,7 @@ import ApplicationsPage from "../pages/ApplicationsPage";
 import LoginPage from "../pages/LoginPage";
 import SignupPage from "../pages/SignupPage";
 import DocumentsPage from "../pages/DocumentsPage";
+import AboutPage from "../pages/AboutPage";
 
 export default function AppRoutes() {
   return (
@@ -15,13 +16,14 @@ export default function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/about" element={<AboutPage />} />
       </Route>
 
       {/* Private pages: require token */}
       <Route element={<ProtectedRoute />}>
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
-        {/* If needed, add more protected routes here */}
+        <Route path="/about" element={<AboutPage />} />
       </Route>
     </Routes>
   );

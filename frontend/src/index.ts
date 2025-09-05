@@ -6,3 +6,4 @@ export { default as DocumentsPage } from "./pages/DocumentsPage";
 export { default as HomePage } from "./pages/HomePage";
 export { default as LoginPage } from "./pages/LoginPage";
 export { default as SignupPage } from "./pages/SignupPage";
+export { default as AboutPage } from "./pages/AboutPage";

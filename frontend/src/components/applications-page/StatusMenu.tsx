@@ -1,6 +1,6 @@
 // components/applications-page/StatusMenu.tsx
 import { useEffect, useState } from "react";
-import { STATUS_LABELS, UI_TO_API } from "../statusMaps";
+import { STATUS_LABELS, UI_TO_API, UI_TO_COLOR } from "../statusMaps";
 import type { UIStatus } from "../types";
 import { API_URL, getToken } from "../../api";
 
@@ -46,7 +46,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
   if (disabled) {
     return (
       <span
-        className="select-none rounded-full border px-3 py-1 text-md capitalize text-gray-600 bg-white"
+        className={`select-none rounded-full border px-3 py-1 text-md capitalize ${UI_TO_COLOR[value]}`}
         aria-disabled="true"
       >
         {STATUS_LABELS[value]}
@@ -58,7 +58,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
     <div className="relative" data-menu-for={appId}>
       <button
         onClick={() => !busy && setOpen((o) => !o)}
-        className="rounded-full border px-3 py-1 text-md capitalize text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-60"
+        className={`rounded-full border px-3 py-1 text-md capitalize ${UI_TO_COLOR[value]} hover:bg-gray-100 disabled:opacity-60`}
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={busy}
@@ -73,7 +73,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
               <button
                 className={[
                   "w-full text-left rounded-md px-3 py-2 text-lg capitalize hover:bg-gray-100",
-                  opt === value ? "font-semibold" : "",
+                  opt === value ? `font-semibold ${UI_TO_COLOR[opt]}` : "",
                 ].join(" ")}
                 onClick={() => move(opt)}
                 role="option"

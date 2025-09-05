@@ -1,12 +1,15 @@
 // src/pages/ApplicationInfoPage.tsx
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { UIStatus, Application } from "../components/types";
 import { ApplicationHeader, ApplicationStatusSelect, ApplicationDetails, NotesList, NoteForm } from "../components/application-info-page";
 import { useApplicationInfo } from "../hooks/useApplicationsInfo";
 import { useNotes } from "../hooks/useNotes";
 import { API_TO_UI } from "../components/statusMaps";
+import { apiGet } from "../api";
 
+type ResumeOut = { resume_id: string; file_name: string; label: string | null; uploaded_at?: string };
+type CVOut = { cv_id: string; file_name: string; label: string | null; uploaded_at?: string };
 
 export default function ApplicationInfoPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +19,15 @@ export default function ApplicationInfoPage() {
 
   // notes
   const { notes, loadingNotes, notesErr, setNotesErr, addNote, deleteNote, updateNote } = useNotes(id);
+
+  // resumes/cvs 
+  const [resumes, setResumes] = useState<ResumeOut[]>([]);
+  const [cvs, setCvs] = useState<CVOut[]>([]);
+
+  const [resumeOption, setResumeOption] = useState<string>("");
+  const [coverLetterOption, setCoverLetterOption] = useState<string>("");
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docsErr, setDocsErr] = useState<string | null>(null);
 
   // local edit UI state
   const [editing, setEditing] = useState(false);
@@ -36,6 +48,11 @@ export default function ApplicationInfoPage() {
     setJobDescription(app.job_description ?? "");
     const d = app.applied_date ? new Date(app.applied_date) : null;
     setAppliedDate(d && !Number.isNaN(d.getTime()) ? toInputDate(d) : (app.applied_date ?? ""));
+
+    // NEW: seed dropdowns from current links (or empty if null)
+    setResumeOption(app.resume_id ?? "");
+    setCoverLetterOption(app.cv_id ?? "");
+
     setEditing(true);
   }
   function cancelEdit() { setEditing(false); }
@@ -53,6 +70,16 @@ export default function ApplicationInfoPage() {
     const ad = appliedDate || null;
     if ((ad || null) !== (app.applied_date ?? null)) payload.applied_date = ad;
 
+    // Resume
+    if (resumeOption !== app.resume_id) {
+      payload.resume_id = resumeOption || null; // "" becomes null
+    }
+
+    // Cover Letter (CV)
+    if (coverLetterOption !== app.cv_id) {
+      payload.cv_id = coverLetterOption || null; // "" becomes null
+    }
+
     if (Object.keys(payload).length === 0) { setEditing(false); return; }
 
     await save(payload);
@@ -65,6 +92,44 @@ export default function ApplicationInfoPage() {
     setNotesErr(null);
     await addNote(id, content);
   }
+
+
+  // ----= NEW FUNCTION -----
+  useEffect(() => {
+    if (!editing) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setDocsErr(null);
+        setDocsLoading(true);
+
+        const [resumesData, cvsData] = await Promise.all([
+          apiGet<ResumeOut[]>("/files/resumes"),
+          apiGet<CVOut[]>("/files/cv"),
+        ]);
+
+        if (cancelled) return;
+        setResumes(resumesData || []);
+        if (resumeOption && !resumesData.some(r => r.resume_id === resumeOption)) {
+          setResumeOption(""); // linked doc missing → fall back to None
+        }
+        setCvs(cvsData || []);
+        if (coverLetterOption && !cvsData.some(c => c.cv_id === coverLetterOption)) {
+          setCoverLetterOption("");
+        }
+
+      /*if (!resumeOption && resumesData?.length) setResumeOption(resumesData[0].resume_id);
+        if (!coverLetterOption && cvsData?.length) setCoverLetterOption(cvsData[0].cv_id);*/
+      } catch (e: any) {
+        if (!cancelled) setDocsErr(e?.message || "Failed to load documents.");
+      } finally {
+        if (!cancelled) setDocsLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [editing]);
 
   return (
     <div className="mx-auto w-full max-w-screen-md min-w-[320px] px-4 py-8">
@@ -96,14 +161,14 @@ export default function ApplicationInfoPage() {
 
               {app.job_description && (
                 <div className="pt-2">
-                  <h2 className="mb-1 text-md font-semibold">Job Description</h2>
+                  <h2 className="mb-1 text-lg font-semibold">Job Description</h2>
                   <p className="whitespace-pre-wrap text-lg text-gray-700">{app.job_description}</p>
                 </div>
               )}
 
               {/* Notes */}
               <div className="pt-2">
-                <h2 className="mb-2 text-md font-semibold">Notes</h2>
+                <h2 className="mb-2 text-lg font-semibold">Notes</h2>
                 <NotesList
                   notes={notes}
                   loading={loadingNotes}
@@ -126,22 +191,63 @@ export default function ApplicationInfoPage() {
             <form onSubmit={saveEdit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-md font-medium text-gray-600">Company</label>
-                  <input value={company} onChange={(e) => setCompany(e.target.value)} className="w-full rounded-md border px-3 py-2" required />
+                  <label className="mb-1 block text-lg font-medium text-gray-600">Company</label>
+                  <input value={company} onChange={(e) => setCompany(e.target.value)} className="w-full rounded-md text-lg border px-3 py-2" required />
                 </div>
                 <div>
-                  <label className="mb-1 block text-md font-medium text-gray-600">Job Title</label>
-                  <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="w-full rounded-md border px-3 py-2" />
+                  <label className="mb-1 block text-lg font-medium text-gray-600">Job Title</label>
+                  <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="w-full text-lg rounded-md border px-3 py-2" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-md font-medium text-gray-600">Applied Date</label>
-                  <input type="date" value={appliedDate} onChange={(e) => setAppliedDate(e.target.value)} className="w-full rounded-md border px-3 py-2" />
+                  <label className="mb-1 block text-lg font-medium text-gray-600">Applied Date</label>
+                  <input type="date" value={appliedDate} onChange={(e) => setAppliedDate(e.target.value)} className="w-full text-lg rounded-md border px-3 py-2" />
                 </div>
+              </div>
+              {/* Resume (from backend) */}
+              <div>
+                <label className="mb-1 block text-md font-medium text-gray-600">Resume</label>
+                {docsLoading ? <div className="text-gray-600">Loading…</div>
+                : docsErr ? <div className="text-red-600">{docsErr}</div>
+                : resumes.length ? (
+                    <select
+                      value={resumeOption}
+                      onChange={(e) => setResumeOption(e.target.value)}
+                      className="w-full rounded-md border px-3 py-2"
+                    >
+                      {resumes.map((r) => (
+                        <option key={r.resume_id} value={r.resume_id}>
+                          {r.label || r.file_name}
+                        </option>
+                      ))}
+                      <option value=""> None </option>   {/* None Option */}
+                    </select>
+                  ) : <div className="text-gray-700">No resumes uploaded yet.</div>}
+              </div>
+              {/* Cover Letter (from backend) */}
+              <div>
+                <label className="mb-1 block text-md font-medium text-gray-600">Cover Letter</label>
+                {docsLoading ? <div className="text-gray-600">Loading…</div>
+                : docsErr ? <div className="text-red-600">{docsErr}</div>
+                : cvs.length ? (
+                  <select
+                    value={coverLetterOption}
+                    onChange={(e) => setCoverLetterOption(e.target.value)}
+                    className="w-full rounded-md border px-3 py-2"
+                  >
+                    
+                    {cvs.map((c) => (
+                      <option key={c.cv_id} value={c.cv_id}>
+                        {c.label || c.file_name}
+                      </option>
+                    ))}
+                    <option value=""> None </option>   {/* None Option */}
+                  </select>
+                  ) : <div className="text-gray-700">No cover letters uploaded yet.</div>}
               </div>
 
               <div>
-                <label className="mb-1 block text-md font-medium text-gray-600">Job Description</label>
-                <textarea rows={5} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} className="w-full rounded-md border px-3 py-2" placeholder="Update the job description or notes…" />
+                <label className="mb-1 block text-lg font-medium text-gray-600">Job Description</label>
+                <textarea rows={5} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} className="w-full rounded-md text-lg border px-3 py-2" placeholder="Update the job description or notes…" />
               </div>
 
               <div className="flex items-center gap-2 pt-2">
