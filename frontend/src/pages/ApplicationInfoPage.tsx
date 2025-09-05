@@ -1,150 +1,47 @@
 // src/pages/ApplicationInfoPage.tsx
-import { useMemo, useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { UIStatus, Application } from "../components/types";
-import { ApplicationHeader, ApplicationStatusSelect, ApplicationDetails, NotesList, NoteForm } from "../components/application-info-page";
-import { useApplicationInfo } from "../hooks/useApplicationsInfo";
+import {
+  ApplicationHeader,
+  ApplicationStatusSelect,
+  ApplicationDetails,
+  NotesList,
+  NoteForm,
+} from "../components/application-info-page";
+import { useApplicationInfo } from "../hooks/useApplicationInfo";
 import { useNotes } from "../hooks/useNotes";
-import { API_TO_UI } from "../components/statusMaps";
-import { apiGet } from "../api";
-
-type ResumeOut = { resume_id: string; file_name: string; label: string | null; uploaded_at?: string };
-type CVOut = { cv_id: string; file_name: string; label: string | null; uploaded_at?: string };
+import { Edit, Trash2 } from "lucide-react";
 
 export default function ApplicationInfoPage() {
   const { id } = useParams<{ id: string }>();
 
-  // app
-  const { app, loading, err, save, moveStatus } = useApplicationInfo(id);
+  // useApplicationInfo
+  const { app, loading, err, moveStatus, handleDelete,
+           resumes, cvs, resumeOption, setResumeOption, coverLetterOption, setCoverLetterOption,
+           docsLoading, docsErr,
+           editing, beginEdit, cancelEdit, saveEdit,
+           company, setCompany, jobTitle, setJobTitle, jobDescription, setJobDescription,
+           appliedDate, setAppliedDate,
+           fmtDate, currentUIStatus } = useApplicationInfo(id);
 
-  // notes
-  const { notes, loadingNotes, notesErr, setNotesErr, addNote, deleteNote, updateNote } = useNotes(id);
-
-  // resumes/cvs 
-  const [resumes, setResumes] = useState<ResumeOut[]>([]);
-  const [cvs, setCvs] = useState<CVOut[]>([]);
-
-  const [resumeOption, setResumeOption] = useState<string>("");
-  const [coverLetterOption, setCoverLetterOption] = useState<string>("");
-  const [docsLoading, setDocsLoading] = useState(false);
-  const [docsErr, setDocsErr] = useState<string | null>(null);
-
-  // local edit UI state
-  const [editing, setEditing] = useState(false);
-  const [company, setCompany] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [appliedDate, setAppliedDate] = useState<string>("");
-
-  const currentUIStatus = useMemo<UIStatus | null>(() => {
-    if (!app?.status) return null;
-    return API_TO_UI[app.status as keyof typeof API_TO_UI];
-  }, [app?.status]);
-
-  function beginEdit() {
-    if (!app) return;
-    setCompany(app.company ?? "");
-    setJobTitle(app.job_title ?? "");
-    setJobDescription(app.job_description ?? "");
-    const d = app.applied_date ? new Date(app.applied_date) : null;
-    setAppliedDate(d && !Number.isNaN(d.getTime()) ? toInputDate(d) : (app.applied_date ?? ""));
-
-    // NEW: seed dropdowns from current links (or empty if null)
-    setResumeOption(app.resume_id ?? "");
-    setCoverLetterOption(app.cv_id ?? "");
-
-    setEditing(true);
-  }
-  function cancelEdit() { setEditing(false); }
-
-  async function saveEdit(ev: React.FormEvent) {
-    ev.preventDefault();
-    if (!id || !app) return;
-
-    const payload: Partial<Application> = {};
-    if (company.trim() && company.trim() !== app.company) payload.company = company.trim();
-    const jt = jobTitle.trim() || null;
-    if ((jt || null) !== (app.job_title ?? null)) payload.job_title = jt;
-    const jd = jobDescription.trim() || null;
-    if ((jd || null) !== (app.job_description ?? null)) payload.job_description = jd;
-    const ad = appliedDate || null;
-    if ((ad || null) !== (app.applied_date ?? null)) payload.applied_date = ad;
-
-    // Resume
-    if (resumeOption !== app.resume_id) {
-      payload.resume_id = resumeOption || null; // "" becomes null
-    }
-
-    // Cover Letter (CV)
-    if (coverLetterOption !== app.cv_id) {
-      payload.cv_id = coverLetterOption || null; // "" becomes null
-    }
-
-    if (Object.keys(payload).length === 0) { setEditing(false); return; }
-
-    await save(payload);
-    setEditing(false);
-  }
-
-  async function onAddNote(content: string) {
-    if (!id) return;
-    // clear any prior fetch error when adding
-    setNotesErr(null);
-    await addNote(id, content);
-  }
-
-
-  // ----= NEW FUNCTION -----
-  useEffect(() => {
-    if (!editing) return;
-    let cancelled = false;
-
-    (async () => {
-      try {
-        setDocsErr(null);
-        setDocsLoading(true);
-
-        const [resumesData, cvsData] = await Promise.all([
-          apiGet<ResumeOut[]>("/files/resumes"),
-          apiGet<CVOut[]>("/files/cv"),
-        ]);
-
-        if (cancelled) return;
-        setResumes(resumesData || []);
-        if (resumeOption && !resumesData.some(r => r.resume_id === resumeOption)) {
-          setResumeOption(""); // linked doc missing → fall back to None
-        }
-        setCvs(cvsData || []);
-        if (coverLetterOption && !cvsData.some(c => c.cv_id === coverLetterOption)) {
-          setCoverLetterOption("");
-        }
-
-      /*if (!resumeOption && resumesData?.length) setResumeOption(resumesData[0].resume_id);
-        if (!coverLetterOption && cvsData?.length) setCoverLetterOption(cvsData[0].cv_id);*/
-      } catch (e: any) {
-        if (!cancelled) setDocsErr(e?.message || "Failed to load documents.");
-      } finally {
-        if (!cancelled) setDocsLoading(false);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [editing]);
+  // useNotes
+  const { notes, loadingNotes, notesErr, deleteNote, updateNote, onAddNote } =
+    useNotes(id);
 
   return (
     <div className="mx-auto w-full max-w-screen-md min-w-[320px] px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <Link to="/applications" className="text-brand text-lg hover:underline">← Back to Applications</Link>
+        <Link to="/applications" className="text-brand text-lg hover:underline">
+          ← Back to Applications
+        </Link>
         {app && (
-          <ApplicationStatusSelect
-            value={currentUIStatus}
-            onChange={(next) => moveStatus(next)}
-          />
+          <ApplicationStatusSelect value={currentUIStatus} onChange={(next) => moveStatus(next)} />
         )}
       </div>
 
       {loading && (
-        <div className="rounded-lg border bg-white p-6 text-center text-gray-600 text-lg">Loading…</div>
+        <div className="rounded-lg border bg-white p-6 text-center text-gray-600 text-lg">
+          Loading…
+        </div>
       )}
 
       {err && !loading && (
@@ -181,9 +78,21 @@ export default function ApplicationInfoPage() {
                 <NoteForm onSubmit={onAddNote} />
               </div>
 
-              <div className="pt-2">
-                <button onClick={beginEdit} className="rounded-lg border px-4 py-2 text-lg hover:bg-gray-100">
+              <div className="flex items-center gap-3 pt-4">
+                <button
+                  onClick={beginEdit}
+                  className="flex items-center gap-2 rounded-lg border px-4 py-2 text-lg hover:bg-gray-100"
+                >
+                  <Edit size={18} />
                   Edit
+                </button>
+
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center gap-2 rounded-lg border border-red-600 px-4 py-2 text-lg text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 size={18} />
+                  Delete
                 </button>
               </div>
             </>
@@ -260,19 +169,4 @@ export default function ApplicationInfoPage() {
       )}
     </div>
   );
-}
-
-/* ---------- helpers ---------- */
-function fmtDate(iso?: string | null) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, {
-    year: "numeric", month: "short", day: "2-digit",
-  });
-}
-function toInputDate(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
 }

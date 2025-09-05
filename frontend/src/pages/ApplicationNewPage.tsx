@@ -1,51 +1,16 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { apiPost } from "../api";
-
-type Status = "applied" | "interviewing" | "offer" | "rejected";
+// src/pages/ApplicationNewPage.tsx
+import { Link, useNavigate } from "react-router-dom";
+import { DocumentSelect } from "../components/application-new-page/DocumentSelect";
+import { useApplicationsNew } from "../hooks/useApplicationsNew";
 
 export default function ApplicationNewPage() {
   const navigate = useNavigate();
-
-  const [company, setCompany] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
-  const [status, setStatus] = useState<Status>("applied");
-  const [appliedDate, setAppliedDate] = useState<string>(""); // YYYY-MM-DD
-
-  const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const f = useApplicationsNew();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null);
-
-    if (!company.trim()) {
-      setErr("Company is required");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      // Build payload per your Pydantic model (omit resume/cv for now)
-      const payload: Record<string, unknown> = {
-        company: company.trim(),
-        status,
-      };
-      if (jobTitle.trim()) payload.job_title = jobTitle.trim();
-      if (jobDescription.trim()) payload.job_description = jobDescription.trim();
-      if (appliedDate) payload.applied_date = appliedDate; // ISO date
-
-      // Single API call using helper (includes Authorization header if using token)
-      await apiPost("/applications", payload);
-
-      // On success, go back to list
-      navigate("/applications");
-    } catch (e: any) {
-      setErr(e.message || "Failed to create application");
-    } finally {
-      setSubmitting(false);
-    }
+    const ok = await f.submit();
+    if (ok) navigate("/applications");
   }
 
   return (
@@ -66,10 +31,10 @@ export default function ApplicationNewPage() {
           </label>
           <input
             id="company"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
+            value={f.company}
+            onChange={(e) => f.setCompany(e.target.value)}
             required
-            disabled={submitting}
+            disabled={f.submitting}
             className="w-full rounded-lg border border-gray-300 px-3 text-lg py-2 focus:border-brand focus:ring focus:ring-brand/30 disabled:bg-gray-100"
             placeholder="Acme Inc."
           />
@@ -82,9 +47,9 @@ export default function ApplicationNewPage() {
           </label>
           <input
             id="jobTitle"
-            value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
-            disabled={submitting}
+            value={f.jobTitle}
+            onChange={(e) => f.setJobTitle(e.target.value)}
+            disabled={f.submitting}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg focus:border-brand focus:ring focus:ring-brand/30 disabled:bg-gray-100"
             placeholder="Software Engineer"
           />
@@ -97,9 +62,9 @@ export default function ApplicationNewPage() {
           </label>
           <textarea
             id="jobDescription"
-            value={jobDescription}
-            onChange={(e) => setJobDescription(e.target.value)}
-            disabled={submitting}
+            value={f.jobDescription}
+            onChange={(e) => f.setJobDescription(e.target.value)}
+            disabled={f.submitting}
             rows={5}
             className="w-full rounded-lg border border-gray-300 px-3 text-lg py-2 focus:border-brand focus:ring focus:ring-brand/30 disabled:bg-gray-100"
             placeholder="Paste the job description or notes here…"
@@ -113,9 +78,9 @@ export default function ApplicationNewPage() {
           </label>
           <select
             id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as Status)}
-            disabled={submitting}
+            value={f.status}
+            onChange={(e) => f.setStatus(e.target.value as any)}
+            disabled={f.submitting}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-brand focus:ring text-lg focus:ring-brand/30 disabled:bg-gray-100"
           >
             <option value="applied">Applied</option>
@@ -133,22 +98,52 @@ export default function ApplicationNewPage() {
           <input
             id="appliedDate"
             type="date"
-            value={appliedDate}
-            onChange={(e) => setAppliedDate(e.target.value)}
-            disabled={submitting}
+            value={f.appliedDate}
+            onChange={(e) => f.setAppliedDate(e.target.value)}
+            disabled={f.submitting}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg focus:border-brand focus:ring focus:ring-brand/30 disabled:bg-gray-100"
           />
         </div>
 
+        {/* Resume selector */}
+        <DocumentSelect
+          label="Resume"
+          value={f.resumeOption}
+          onChange={f.setResumeOption}
+          loading={f.docsLoading}
+          error={f.docsErr}
+          disabled={f.submitting}
+          options={f.resumes.map((r) => ({
+            value: r.resume_id,
+            label: r.label ?? r.file_name,
+          }))}
+          noneLabel="None"
+        />
+
+        {/* Cover Letter (CV) selector */}
+        <DocumentSelect
+          label="Cover Letter"
+          value={f.coverLetterOption}
+          onChange={f.setCoverLetterOption}
+          loading={f.docsLoading}
+          error={f.docsErr}
+          disabled={f.submitting}
+          options={f.cvs.map((c) => ({
+            value: c.cv_id,
+            label: c.label ?? c.file_name,
+          }))}
+          noneLabel="None"
+        />
+
         <button
           type="submit"
-          disabled={submitting}
+          disabled={f.submitting}
           className="w-full rounded-lg bg-brand px-4 py-2 font-medium text-white transition hover:brightness-95 disabled:opacity-60 text-lg"
         >
-          {submitting ? "Saving…" : "Save Application"}
+          {f.submitting ? "Saving…" : "Save Application"}
         </button>
 
-        {err && <p className="text-lg text-red-600">{err}</p>}
+        {f.err && <p className="text-lg text-red-600">{f.err}</p>}
       </form>
     </div>
   );

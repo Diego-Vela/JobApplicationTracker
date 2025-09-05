@@ -71,12 +71,34 @@ export async function apiPut<T, B = unknown>(path: string, body?: B): Promise<T>
   });
   return handleJsonOrThrow(res, "PUT", path);
 }
-export async function apiDelete<T>(path: string): Promise<T> {
+export async function apiDelete(path: string): Promise<void> {
   const res = await fetch(`${API_URL}${path}`, {
     method: "DELETE",
-    headers: authHeaders(),
+    headers: {
+      "Authorization": `Bearer ${getToken()}`,
+    },
   });
-  return handleJsonOrThrow(res, "DELETE", path);
+
+  if (!res.ok) {
+    // Try to extract error text/json, but tolerate empties
+    const ct = res.headers.get("content-type") || "";
+    let message = `Request failed (${res.status})`;
+    try {
+      if (ct.includes("application/json")) {
+        const data = await res.json();
+        message = data?.detail || data?.message || message;
+      } else {
+        const txt = await res.text();
+        if (txt) message = txt;
+      }
+    } catch {
+      /* ignore parse errors */
+    }
+    throw new Error(message);
+  }
+
+  // Success: do not parse json for DELETE
+  return;
 }
 
 export async function apiSend<T>(path: string, method: string, body?: any): Promise<T> {
@@ -90,4 +112,14 @@ export async function apiSend<T>(path: string, method: string, body?: any): Prom
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+
+/** PATCH with automatic Authorization */
+export async function apiPatch<T, B = unknown>(path: string, body?: B): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "PATCH",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  return handleJsonOrThrow(res, "PATCH", path);
 }

@@ -1,12 +1,21 @@
-import { User, Lightbulb, Wrench, MessageSquare, Github, Mail } from "lucide-react";
+import { User, Lightbulb, Wrench, MessageSquare, Github, Mail, ClipboardCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 const GITHUB_URL = "https://github.com/diego-vela/JobApplicationTracker";
 const CONTACT_EMAIL = "diegov5498@gmail.com";
 
 export default function AboutProject() {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopyEmail() {
+    navigator.clipboard.writeText(CONTACT_EMAIL);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  }
+
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900 rounded-2xl shadow-xl overflow-y-auto">
       <header className="mx-auto max-w-5xl px-6 pt-14 pb-10">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -20,8 +29,8 @@ export default function AboutProject() {
           </span>
           <h1 className="text-3xl font-semibold leading-tight md:text-4xl">About this project</h1>
           <p className="max-w-3xl text-gray-700">
-            Jobblet is a streamlined job-application tracker designed to keep your resumes, CVs, notes,
-            and application statuses organized — so you can focus on winning interviews.
+            Jobblet is a streamlined job-application tracker to attach resumes, CVs, and notes
+            to specific applications to quickly recall, organize, and manage your job applications.
           </p>
           <nav className="mt-2 flex flex-wrap gap-3 text-sm">
             <a href="#who" className="rounded-full border border-gray-300 bg-gray-100 px-3 py-1 text-gray-600 hover:text-gray-900">Who I am</a>
@@ -36,16 +45,17 @@ export default function AboutProject() {
         {/* Who I Am */}
         <Section id="who" icon={User} title="Who I am">
           <p>
-            Hi, I’m <span className="font-medium">Diego</span> — a Computer Science student and software engineer focused on
-            building practical, user-centered tools. I enjoy backend systems, mobile, and product design.
+            Hi, I’m <span className="font-medium">Diego</span> — a Computer Science graduate and software engineer focused on
+            fullstack web and mobile development. 
           </p>
         </Section>
 
         {/* Why I Built This */}
         <Section id="why" icon={Lightbulb} title="Why I built this">
           <p>
-            Job searching gets messy fast. I built this site to simplify the process: one place for tracking
-            applications, attaching resumes/CVs, jotting notes, and keeping status changes tidy.
+            Job searching after graduation got messy fast. I built this site to organize my process: one place for tracking
+            applications, attaching resumes/CVs, jotting notes, and keeping status changes tidy while simultaneously experimenting
+            with Amazon Web Services.
           </p>
         </Section>
 
@@ -53,18 +63,17 @@ export default function AboutProject() {
         <Section id="stack" icon={Wrench} title="Tech stack & process">
           <ul className="list-disc space-y-2 pl-6 text-gray-700">
             <li>
-              <span className="font-medium text-gray-900">Frontend:</span> React (Vite) + Tailwind for a fast, responsive UI.
+              <span className="font-medium text-gray-900">Frontend:</span> React (Vite) + Tailwind.
             </li>
             <li>
-              <span className="font-medium text-gray-900">Backend:</span> FastAPI + PostgreSQL for typed, reliable APIs and relational data.
+              <span className="font-medium text-gray-900">Backend:</span> FastAPI + PostgreSQL which transitioned to AWS Lambda, API Gateway, and DynamoDB.
             </li>
             <li>
               <span className="font-medium text-gray-900">Storage & Auth:</span> AWS S3 for documents, Cognito for authentication, and Lambda for
               serverless tasks.
             </li>
             <li>
-              <span className="font-medium text-gray-900">Process:</span> Iterative and feature-first — core flows first, then refinements (docs, notes,
-              filters, AI-assisted sorting).
+              <span className="font-medium text-gray-900">Process:</span> Light planning involving user stories, data flow diagrams, and iterative feature development.
             </li>
           </ul>
         </Section>
@@ -72,7 +81,7 @@ export default function AboutProject() {
         {/* Feedback */}
         <Section id="feedback" icon={MessageSquare} title="Feedback & communication">
           <p>
-            This is an active project — I’d love your ideas and bug reports. Your feedback directly shapes the roadmap.
+            This is an active project — I’d appreciate your ideas and bug reports. Thank you for visiting Jobblet!
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <a
@@ -83,12 +92,23 @@ export default function AboutProject() {
             >
               <Github className="h-4 w-4" /> Open an Issue
             </a>
-            <a
-              href={`mailto:${CONTACT_EMAIL}?subject=Jobblet%20Feedback`}
+            <button
+              type="button"
+              onClick={handleCopyEmail}
               className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-gray-100 px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
             >
-              <Mail className="h-4 w-4" /> Email feedback
-            </a>
+              {copied ? (
+                <>
+                  <ClipboardCheck className="h-4 w-4 text-green-600" />
+                  Copied to Clipboard!
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4" />
+                  {CONTACT_EMAIL}
+                </>
+              )}
+            </button>
           </div>
         </Section>
 

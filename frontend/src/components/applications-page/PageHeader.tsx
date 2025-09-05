@@ -2,7 +2,7 @@
 import HeaderActions from "./HeaderActions";
 import BulkActions from "./BulkActions";
 import type { UIStatus } from "../types";
-import { Pencil } from "lucide-react"; 
+import { Edit } from "lucide-react"; 
 
 type Props = {
   selectionMode: boolean;
@@ -38,7 +38,7 @@ export default function PageHeader({
               onClick={onToggleSelectionMode}
               className="rounded-lg border px-3 py-2 text-xl hover:bg-gray-100 flex items-center gap-2"
             >
-              <Pencil className="h-5 w-5" aria-hidden /> {/* Edit icon */}
+              <Edit className="h-5 w-5" aria-hidden /> {/* Edit icon */}
               Edit
             </button>
             <HeaderActions onRefresh={onRefresh} />

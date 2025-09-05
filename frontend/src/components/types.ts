@@ -25,6 +25,16 @@ export type AppNote = {
   created_at: string; // ISO
 };
 
+export type CreatePayload = {
+  company: string;
+  job_title?: string;
+  job_description?: string;
+  status: UIStatus;
+  applied_date?: string; // YYYY-MM-DD
+  resume_id?: string;
+  cv_id?: string;
+};
+
 export const MAX_NUM_NOTES = 15;
 export const MAX_NOTES_LENGTH = 500;
 export const MAX_DESCRIPTION_LENGTH = 1500;
@@ -64,5 +74,5 @@ export const ACCEPTED_MIME = [
 ];
 
 export const MAX_RESUMES = 5;
-export const MAX_CVS = 15;
+export const MAX_CVS = 50;
 export const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
