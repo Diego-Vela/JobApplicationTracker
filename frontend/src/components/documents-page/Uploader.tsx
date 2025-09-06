@@ -134,7 +134,10 @@ export function Uploader({
           type="button"
           onClick={handleUpload}
           disabled={disabled || !selectedFile}
-          className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-lg font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+          className={[
+            "inline-flex items-center justify-center rounded-xl border px-3 py-2 text-lg font-medium disabled:cursor-not-allowed disabled:opacity-60",
+            !disabled && selectedFile ? "hover:cursor-pointer hover:bg-gray-100" : "",
+          ].join(" ")}
         >
           {uploading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading…</>) : (<>Upload</>)}
         </button>

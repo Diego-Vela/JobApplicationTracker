@@ -27,6 +27,9 @@ export default function TermsOfServicePage() {
       <main className="mx-auto max-w-5xl px-6 pb-20">
         <Section id="account" icon={CheckCircle} title="Your account">
           <ul className="list-disc pl-6 space-y-2">
+            <li>
+              I use cybersecurity best practices and AWS security features to protect your account and data including encryption, access controls, and monitoring.
+            </li>
             <li>You’re responsible for keeping your login secure.</li>
             <li>Provide accurate information when signing up.</li>
           </ul>
@@ -43,7 +46,7 @@ export default function TermsOfServicePage() {
 
         <Section id="uploads" icon={FileCheck} title="Your uploads">
           <p>
-            You own the resumes, CVs, and notes you upload. I only store and
+            You own the files and information you upload. I only store and
             process them so you can use the features of the site. I don’t claim
             ownership of your content.
           </p>
@@ -51,7 +54,7 @@ export default function TermsOfServicePage() {
 
         <Section id="availability" icon={AlertTriangle} title="Availability">
           <p>
-            I’ll do my best to keep Jobblet up and running, but I can’t promise
+            I’ll do my best to keep Jobblet up and running through AWS, but I can’t promise
             100% uptime. Maintenance and technical issues may cause temporary
             interruptions.
           </p>

@@ -57,6 +57,10 @@ export default function AboutProject() {
             applications, attaching resumes/CVs, jotting notes, and keeping status changes tidy while simultaneously experimenting
             with Amazon Web Services.
           </p>
+          <p className="mt-4">
+            Additionally, while the site is currently tailored to job applications, it can be adapted for other purposes that don't 
+            require sensitive personal information. I'm planning to expand customization options for tabs, upload categories, etc.
+          </p>
         </Section>
 
         {/* Tech Stack & Process */}

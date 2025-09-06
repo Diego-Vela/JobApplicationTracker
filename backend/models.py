@@ -29,6 +29,13 @@ class Resume(Base):
     label      = Column(Text)
     uploaded_at= Column(DateTime(timezone=True), server_default=func.now())
 
+    applications = relationship(
+        "Application",
+        primaryjoin="Application.resume_id==Resume.resume_id",
+        back_populates="resume",
+        passive_deletes=True,
+    )
+
 class CV(Base):
     __tablename__ = "cv"
     cv_id      = Column(UUID(as_uuid=False), primary_key=True, default=uuid_pk)
@@ -37,6 +44,13 @@ class CV(Base):
     file_name  = Column(Text, nullable=False)
     label      = Column(Text)
     uploaded_at= Column(DateTime(timezone=True), server_default=func.now())
+
+    applications = relationship(
+        "Application",
+        primaryjoin="Application.cv_id==CV.cv_id",
+        back_populates="cv",
+        passive_deletes=True,
+    )
 
 class Application(Base):
     __tablename__ = "application"
@@ -53,6 +67,9 @@ class Application(Base):
 
     user = relationship("User", back_populates="applications")
     notes = relationship("ApplicationNote", back_populates="application", cascade="all, delete")
+    resume = relationship("Resume", back_populates="applications")
+    cv     = relationship("CV",     back_populates="applications")
+    
 
 class ApplicationNote(Base):
     __tablename__ = "application_notes"
