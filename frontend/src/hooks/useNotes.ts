@@ -1,99 +1,104 @@
-// src/hooks/useNotes.ts
-import { useEffect, useState, useCallback } from "react";
-import { apiGet, apiPost, apiDelete, apiPatch } from "../api";
-import type { AppNote } from "../components/types";
+// src/features/notes/useNotes.ts
+import { useCallback, useEffect, useState } from "react"
+import { apiGet, apiPost, apiPatch, apiDelete } from "../api"
+import type { AppNote } from "../components/types"
 
-async function apiFetchNotes(appId: string) {
-  return apiGet<AppNote[]>(`/applications/${appId}/notes`);
-}
-
-export function useNotes(id?: string) {
-  const [notes, setNotes] = useState<AppNote[]>([]);
-  const [loadingNotes, setLoadingNotes] = useState(false);
-  const [notesErr, setNotesErr] = useState<string | null>(null);
+export function useNotes(applicationId: string) {
+  const [notes, setNotes] = useState<AppNote[]>([])
+  const [loadingNotes, setLoadingNotes] = useState(false)
+  const [notesErr, setNotesErr] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
-    if (!id) return;
-    setLoadingNotes(true);
-    setNotesErr(null);
+    if (!applicationId) return
+    setLoadingNotes(true)
+    setNotesErr(null)
     try {
-      const data = await apiFetchNotes(id);
-      setNotes(data || []);
-    } catch (e: unknown) {
-      setNotesErr(e instanceof Error ? e.message : "Failed to load notes");
+      const data = await apiGet<AppNote[]>(`/applications/${applicationId}/notes`)
+      setNotes(data)
+    } catch (e: any) {
+      setNotesErr(e?.message || "Failed to load notes")
     } finally {
-      setLoadingNotes(false);
+      setLoadingNotes(false)
     }
-  }, [id]);
+  }, [applicationId])
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    refresh()
+  }, [refresh])
 
-  async function addNote(appId: string, content: string) {
-    setNotesErr(null);
-    const temp: AppNote = {
-      note_id: `temp-${Date.now()}`,
-      application_id: appId,
-      content,
-      created_at: new Date().toISOString(),
-    };
-    setNotes(prev => [temp, ...prev]);
-    try {
-      const created = await apiPost<AppNote>(`/applications/${appId}/notes`, { content });
-      setNotes(prev => [created, ...prev.filter(n => n.note_id !== temp.note_id)]);
-    } catch (e) {
-      setNotes(prev => prev.filter(n => n.note_id !== temp.note_id));
-      throw e;
-    } finally {
-      refresh();
-    }
-  }
+  const createNote = useCallback(
+    async (payload: string) => {
+      // optimistic create
+      const tempId = `tmp-${Math.random().toString(36).slice(2)}`
+      const optimistic: AppNote = {
+        note_id: tempId,
+        application_id: applicationId,
+        content: payload,
+        created_at: new Date().toISOString(),
+      }
+      setNotes((prev) => [optimistic, ...prev])
 
-  async function deleteNote(appId: string, noteId: string) {
-    setNotesErr(null);
-    const prev = notes;
-    setNotes(prev.filter(n => n.note_id !== noteId));
-    try {
-      await apiDelete(`/applications/${appId}/notes/${noteId}`);
-    } catch (e) {
-      setNotes(prev);
-      throw e;
-    } finally {
-      refresh();
-    }
-  }
+      try {
+        const created = await apiPost<AppNote>(`/applications/${applicationId}/notes`, { content: payload })
+        setNotes((prev) => [created, ...prev.filter((n) => n.note_id !== tempId)])
+        return created
+      } catch (e) {
+        // rollback
+        setNotes((prev) => prev.filter((n) => n.note_id !== tempId))
+        throw e
+      }
+    },
+    [applicationId]
+  )
 
-  async function updateNote(appId: string, noteId: string, content: string) {
-    setNotesErr(null);
-    const prev = notes;
-    setNotes(prev.map(n => (n.note_id === noteId ? { ...n, content } : n)));
-    try {
-      const updated = await apiPatch<AppNote>(`/applications/${appId}/notes/${noteId}`, { content });
-      setNotes(p => p.map(n => (n.note_id === noteId ? updated : n)));
-    } catch (e) {
-      setNotes(prev);
-      throw e;
-    } finally {
-      refresh();
-    }
-  }
+  const updateNote = useCallback(
+    async (noteId: string, content: string) => {
+      // optimistic update
+      const prev = notes
+      setNotes((cur) =>
+        cur.map((n) => (n.note_id === noteId ? { ...n, content } : n))
+      )
+      try {
+        const updated = await apiPatch<AppNote>(
+          `/applications/${applicationId}/notes/${noteId}`,
+          { content }
+        )
+        setNotes((cur) =>
+          cur.map((n) => (n.note_id === noteId ? updated : n))
+        )
+        return updated
+      } catch (e) {
+        // rollback
+        setNotes(prev)
+        throw e
+      }
+    },
+    [applicationId, notes]
+  )
 
-  async function onAddNote(content: string) {
-    if (!id) return;
-    setNotesErr(null);
-    await addNote(id, content);
-  }
+  const deleteNote = useCallback(
+    async (noteId: string) => {
+      // optimistic delete
+      const prev = notes
+      setNotes((cur) => cur.filter((n) => n.note_id !== noteId))
+      try {
+        await apiDelete(`/applications/${applicationId}/notes/${noteId}`)
+      } catch (e) {
+        // rollback
+        setNotes(prev)
+        throw e
+      }
+    },
+    [applicationId, notes]
+  )
 
   return {
     notes,
     loadingNotes,
     notesErr,
-    setNotesErr,
     refresh,
-    addNote,
-    deleteNote,
+    createNote,
     updateNote,
-    onAddNote,
-  };
+    deleteNote,
+  }
 }

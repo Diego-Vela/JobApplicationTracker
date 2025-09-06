@@ -24,8 +24,8 @@ export default function ApplicationInfoPage() {
            fmtDate, currentUIStatus } = useApplicationInfo(id);
 
   // useNotes
-  const { notes, loadingNotes, notesErr, deleteNote, updateNote, onAddNote } =
-    useNotes(id);
+  const { notes, loadingNotes, notesErr, deleteNote, updateNote, createNote } =
+    useNotes(id as string);
 
   return (
     <div className="mx-auto w-full max-w-screen-md min-w-[320px] px-4 py-8">
@@ -71,11 +71,11 @@ export default function ApplicationInfoPage() {
                   loading={loadingNotes}
                   error={notesErr}
                   fmtDate={fmtDate}
-                  onDelete={(noteId) => deleteNote(id!, noteId)}
-                  onUpdate={(noteId, content) => updateNote(id!, noteId, content)}
+                  onDelete={(noteId) => deleteNote(noteId)}
+                  onUpdate={async (noteId, content) => { await updateNote(noteId, content); }}
                   confirmDelete="Are you sure you want to delete this note?"
                 />
-                <NoteForm onSubmit={onAddNote} />
+                <NoteForm onSubmit={async (content) => { await createNote(content); }} />
               </div>
 
               <div className="flex items-center gap-3 pt-4">
