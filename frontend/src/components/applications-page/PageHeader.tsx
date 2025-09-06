@@ -15,6 +15,7 @@ type Props = {
   onBulkDelete: () => void;
   onBulkMove: (status: UIStatus) => void;
   onRefresh: () => void;
+  onCancel?: () => void;
 };
 
 export default function PageHeader({
@@ -27,6 +28,7 @@ export default function PageHeader({
   onBulkDelete,
   onBulkMove,
   onRefresh,
+  onCancel,
 }: Props) {
   return (
     <div className="mb-4 overflow-x-auto overflow-y-hidden">
@@ -51,6 +53,7 @@ export default function PageHeader({
             onSelectAll={onSelectAll}
             onBulkDelete={onBulkDelete}
             onBulkMove={onBulkMove}
+            onCancel={onCancel}
           />
         )}
       </div>

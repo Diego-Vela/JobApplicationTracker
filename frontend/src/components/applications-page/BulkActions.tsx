@@ -9,15 +9,16 @@ type Props = {
   onSelectAll: () => void;
   onBulkDelete: () => void;
   onBulkMove: (status: UIStatus) => void;
+  onCancel?: () => void;
 };
 
 export default function BulkActions({
   selectedCount,
   bulkBusy,
-  onClearSelection,
   onSelectAll,
   onBulkDelete,
   onBulkMove,
+  onCancel
 }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -70,7 +71,7 @@ export default function BulkActions({
       </button>
 
       <button
-        onClick={onClearSelection}
+        onClick={onCancel}
         className="rounded-lg px-3 py-2 text-lg hover:bg-gray-100"
       >
         Cancel
