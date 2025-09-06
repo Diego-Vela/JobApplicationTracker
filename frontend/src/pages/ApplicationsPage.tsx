@@ -1,122 +1,89 @@
-// src/pages/ApplicationsPage.tsx
-import { useMemo, useState, useCallback } from "react";
-import {
-  PageHeader,
-  LoadingMessage,
-  ErrorMessage,
-  EmptyState,
-  ApplicationList,
-  Tabs,
-  SearchBar,
-} from "../components/applications-page";
+// components/applications-page/ApplicationList.tsx
+import { useEffect, useRef } from "react";
+import ApplicationCard from "../components/applications-page/ApplicationCard";
+import type { Application, UIStatus } from "../components/types";
 
-import { useApplications } from "../hooks/useApplications";
-import type { TabKey, UIStatus } from "../components/types";
+export default function ApplicationList({
+  apps,
+  getDisplayedStatus,
+  onStatusChanged,
+  selectionMode,
+  selected,
+  onToggleSelected,
 
-export default function ApplicationsPage() {
-  // tabs: "all" | "applied" | "interviewing" | "offer" | "rejected"
-  const [active, setActive] = useState<TabKey>("all");
+  //infinite scroll props
+  onLoadMore,           
+  hasMore = false,      
+  loadingMore = false,  
+  rootMargin = "600px", 
+}: {
+  apps: Application[];
+  getDisplayedStatus?: (a: Application) => UIStatus;
+  onStatusChanged?: (id: string, next: UIStatus) => void;
 
-  // NEW: hook now accepts initial filters and returns renamed fields
-  const {
-    items,                
-    loading,
-    error,              
-    refresh,            
+  selectionMode?: boolean;
+  selected?: Set<string>;
+  onToggleSelected?: (id: string) => void;
 
-    // search/filter
-    q, setQ,             
-    setStatus,   
+  // NEW
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  rootMargin?: string;
+}) {
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-    // selection (record<string, bool>)
-    selected,
-    toggle,              
-    selectAll,
-    clearSelection,
+  // Observe the sentinel to trigger onLoadMore()
+  useEffect(() => {
+    if (!onLoadMore || !hasMore) return;
 
-    // operations
-    bulkMove,             
-    bulkDelete,
-    moveStatus,           
-  } = useApplications({ status: active });
+    const el = sentinelRef.current;
+    if (!el) return;
 
-  // Keep your PageHeader “selectionMode” UX as-is with a local toggle
-  const [selectionMode, setSelectionMode] = useState(false);
-  const toggleSelectionMode = useCallback(() => setSelectionMode((v) => !v), []);
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !loadingMore) {
+          onLoadMore();
+        }
+      },
+      { root: null, rootMargin, threshold: 0 }
+    );
 
-  // Convert record -> Set for your components that expect Set
-  const selectedSet = useMemo(() => {
-    const ids = Object.entries(selected).filter(([, v]) => v).map(([k]) => k);
-    return new Set(ids);
-  }, [selected]);
-
-  const selectAllOnPage = useCallback(() => {
-    // select all currently loaded items
-    selectAll();
-  }, [selectAll]);
-
-  // When a single card's status changes, call API and let local state update
-  const setOverride = useCallback(
-    async (id: string, next: UIStatus) => {
-      await moveStatus(id, next as any); // ApiStatus is same union as UIStatus in your app
-    },
-    [moveStatus]
-  );
-
-  // Keep SearchBar in sync with the hook’s q
-  const search = q;
-  const setSearch = setQ;
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [onLoadMore, hasMore, loadingMore, rootMargin]);
 
   return (
-    <div className="mx-auto w-full max-w-screen-lg min-w-[320px] px-4 py-8">
-      <PageHeader
-        selectionMode={selectionMode}
-        selectedCount={selectedSet.size}
-        bulkBusy={false}                 // hook now performs ops inline; no separate busy flag
-        onToggleSelectionMode={toggleSelectionMode}
-        onClearSelection={clearSelection}
-        onSelectAll={selectAllOnPage}
-        onBulkDelete={bulkDelete}
-        onBulkMove={(next: UIStatus) => bulkMove(next as any)}
-        onRefresh={refresh}
-      />
+    <>
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-1">
+        {apps.map((a) => (
+          <ApplicationCard
+            key={a.application_id}
+            app={a}
+            displayedStatus={getDisplayedStatus ? getDisplayedStatus(a) : undefined}
+            onStatusChanged={(next: UIStatus) => onStatusChanged?.(a.application_id, next)}
+            selectionMode={selectionMode}
+            selected={selected?.has(a.application_id)}
+            onToggleSelected={onToggleSelected}
+          />
+        ))}
+      </ul>
 
-      {/* Search within current tab */}
-      <SearchBar value={search} onChange={setSearch} />
+      {/* NEW: infinite scroll sentinel + footer UI */}
+      <div ref={sentinelRef} aria-hidden className="h-1" />
 
-      <Tabs
-        value={active}
-        onChange={(t) => {
-          setActive(t);
-          setStatus(t === "all" ? "all" : (t as any));
-          // keep selectionMode state as-is
-        }}
-      />
-
-      {loading && (
-        <LoadingMessage text={`Loading ${active === "all" ? "all" : active} applications…`} />
+      {loadingMore && (
+        <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
+          Loading more…
+        </div>
       )}
 
-      {error && !loading && <ErrorMessage text={error} />}
-
-      {!loading && !error && items && items.length === 0 && (
-        <EmptyState label={active === "all" ? "All" : active} showCta={active === "all"} />
+      {!hasMore && apps.length > 0 && (
+        <div className="mt-4 flex items-center justify-center text-xs text-gray-400">
+          You’ve reached the end.
+        </div>
       )}
-
-      {!loading && !error && items && items.length > 0 && (
-        <ApplicationList
-          apps={items}
-          getDisplayedStatus={(a) => ((a.status ?? "applied") as UIStatus)}
-          // selection mode + bulk edit
-          selectionMode={selectionMode}
-          selected={selectedSet}
-          onToggleSelected={(id: string) => toggle(id)}
-          // per-card status change 
-          onStatusChanged={(id, next) => {
-            setOverride(id, next);
-          }}
-        />
-      )}
-    </div>
+    </>
   );
 }

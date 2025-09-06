@@ -35,9 +35,11 @@ export type CreatePayload = {
   cv_id?: string;
 };
 
-export const MAX_NUM_NOTES = 15;
+export const MAX_NUM_NOTES = 10;
+export const MAX_LABEL_LENGTH = 35;
 export const MAX_NOTES_LENGTH = 500;
-export const MAX_DESCRIPTION_LENGTH = 1500;
+export const MAX_DESCRIPTION_LENGTH = 2000;
+export const MAX_TOTAL_APPLICATIONS = 500;
 
 // ---------------------------------- Document-related types ---------------------------------- //
 export type DocType = "resume" | "cv";
@@ -74,5 +76,5 @@ export const ACCEPTED_MIME = [
 ];
 
 export const MAX_RESUMES = 5;
-export const MAX_CVS = 50;
+export const MAX_CVS = 40;
 export const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB

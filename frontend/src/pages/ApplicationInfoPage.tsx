@@ -10,6 +10,7 @@ import {
 import { useApplicationInfo } from "../hooks/useApplicationInfo";
 import { useNotes } from "../hooks/useNotes";
 import { Edit, Trash2 } from "lucide-react";
+import { MAX_NUM_NOTES } from "../components/types";
 
 export default function ApplicationInfoPage() {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +66,12 @@ export default function ApplicationInfoPage() {
 
               {/* Notes */}
               <div className="pt-2">
-                <h2 className="mb-2 text-lg font-semibold">Notes</h2>
+                <h2 className="mb-2 text-lg font-semibold flex items-center gap-2">
+                  Notes
+                  <span className="text-sm font-normal text-gray-500">
+                    {notes.length}/{MAX_NUM_NOTES}
+                  </span>
+                </h2>
                 <NotesList
                   notes={notes}
                   loading={loadingNotes}
@@ -75,7 +81,14 @@ export default function ApplicationInfoPage() {
                   onUpdate={async (noteId, content) => { await updateNote(noteId, content); }}
                   confirmDelete="Are you sure you want to delete this note?"
                 />
-                <NoteForm onSubmit={async (content) => { await createNote(content); }} />
+                {notes.length < MAX_NUM_NOTES && (
+                  <NoteForm onSubmit={async (content) => { await createNote(content); }} />
+                )}
+                {notes.length >= MAX_NUM_NOTES && (
+                  <div className="mt-2 text-sm">
+                    You have reached the maximum number of notes ({MAX_NUM_NOTES}).
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-3 pt-4">

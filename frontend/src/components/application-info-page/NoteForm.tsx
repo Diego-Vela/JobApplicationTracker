@@ -1,5 +1,6 @@
 // src/components/NoteForm.tsx
 import { useState } from "react";
+import { MAX_NOTES_LENGTH } from "../types";
 
 type Props = {
   onSubmit: (content: string) => Promise<void>;
@@ -11,11 +12,16 @@ export function NoteForm({ onSubmit }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!value.trim()) return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    if (trimmed.length > MAX_NOTES_LENGTH) {
+      setErr(`Note is too long (${trimmed.length}/${MAX_NOTES_LENGTH} characters).`);
+      return;
+    }
     try {
       setErr(null);
       setSaving(true);
-      await onSubmit(value.trim());
+      await onSubmit(trimmed);
       setValue("");
     } catch (e: any) {
       setErr(e.message || "Failed to add note");
@@ -32,8 +38,14 @@ export function NoteForm({ onSubmit }: Props) {
         onChange={(e) => setValue(e.target.value)}
         className="w-full rounded-md border px-3 py-2 text-lg"
         placeholder="Add a note about this application…"
+        maxLength={MAX_NOTES_LENGTH} // Prevents excessive input
       />
-      {err && <p className="text-lg text-red-600 break-words">{err}</p>}
+      <div className="flex justify-between items-center text-sm text-gray-500">
+        <span>
+          {value.trim().length}/{MAX_NOTES_LENGTH}
+        </span>
+        {err && <span className="text-red-600 break-words">{err}</span>}
+      </div>
       <div className="flex items-center gap-2">
         <button
           type="submit"
