@@ -1,7 +1,8 @@
 # backend/schemas.py
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import date, datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, conlist, Field
+from uuid import UUID
 
 # ---------- Auth ----------
 class SignUpIn(BaseModel):
@@ -68,6 +69,13 @@ class ApplicationOut(BaseModel):
     created_at: datetime
     resume_id: Optional[str]
     cv_id: Optional[str]
+
+class BulkMoveIn(BaseModel):
+    ids: List[UUID] = Field(..., min_items=1, max_items=200)
+    status: Literal["applied", "interviewing", "offer", "rejected"]
+
+class BulkDeleteIn(BaseModel):
+    ids: List[UUID] = Field(..., min_items=1, max_items=200)
 
 # ---------- Notes ----------
 class NoteCreate(BaseModel):

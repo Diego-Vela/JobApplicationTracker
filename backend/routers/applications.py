@@ -103,3 +103,39 @@ def delete_application(
     db.delete(app)
     db.commit()
     return None
+
+@router.post("/bulk-move")
+def bulk_move(
+    payload: schemas.BulkMoveIn,
+    current_user: models.User = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    # Only update owned applications
+    q = db.query(models.Application).filter(
+        models.Application.user_id == current_user.user_id,
+        models.Application.application_id.in_(payload.ids),
+    )
+    updated = q.update({"status": payload.status}, synchronize_session=False)
+    db.commit()
+    return {
+        "requested_count": len(payload.ids),
+        "updated_count": updated,
+    }
+
+
+@router.post("/bulk-delete")
+def bulk_delete(
+    payload: schemas.BulkDeleteIn,
+    current_user: models.User = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    q = db.query(models.Application).filter(
+        models.Application.user_id == current_user.user_id,
+        models.Application.application_id.in_(payload.ids),
+    )
+    deleted = q.delete(synchronize_session=False)
+    db.commit()
+    return {
+        "requested_count": len(payload.ids),
+        "deleted_count": deleted,
+    }
