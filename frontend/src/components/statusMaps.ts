@@ -36,3 +36,10 @@ export const UI_TO_COLOR: Record<UIStatus, string> = {
   offer: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
 };
+
+export const UI_TO_COLOR2: Record<UIStatus, string> = {
+  applied: "text-blue-800",
+  interviewing: "text-yellow-800",
+  offer: "text-green-800",
+  rejected: "text-red-800",
+};

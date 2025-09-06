@@ -1,6 +1,7 @@
 // components/applications-page/BulkActions.tsx
 import { useState } from "react";
 import type { UIStatus } from "../types";
+import { UI_TO_COLOR2, STATUS_LABELS } from "../statusMaps";
 
 type Props = {
   selectedCount: number;
@@ -47,13 +48,13 @@ export default function BulkActions({
               (opt) => (
                 <li key={opt}>
                   <button
-                    className="w-full text-left rounded-md px-3 py-2 text-lg capitalize hover:bg-gray-100"
+                    className={`w-full text-left rounded-md px-3 py-2 text-lg capitalize hover:bg-gray-100 ${UI_TO_COLOR2[opt]}`}
                     onClick={() => {
                       setOpen(false);
                       onBulkMove(opt);
                     }}
                   >
-                    {opt}
+                    {STATUS_LABELS[opt]}
                   </button>
                 </li>
               )

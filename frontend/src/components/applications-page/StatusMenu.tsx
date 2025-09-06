@@ -1,6 +1,6 @@
 // components/applications-page/StatusMenu.tsx
 import { useEffect, useState } from "react";
-import { STATUS_LABELS, UI_TO_API, UI_TO_COLOR } from "../statusMaps";
+import { STATUS_LABELS, UI_TO_API, UI_TO_COLOR, UI_TO_COLOR2 } from "../statusMaps";
 import type { UIStatus } from "../types";
 import { apiPost, APIError } from "../../api"; // ⬅️ use new helpers
 
@@ -75,7 +75,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
             <li key={opt}>
               <button
                 className={[
-                  "w-full text-left rounded-md px-3 py-2 text-lg capitalize hover:bg-gray-100",
+                  `w-full text-left rounded-md px-3 py-2 text-lg capitalize hover:bg-gray-100 ${UI_TO_COLOR2[opt]}`,
                   opt === value ? `font-semibold ${UI_TO_COLOR[opt]}` : "",
                 ].join(" ")}
                 onClick={() => move(opt)}

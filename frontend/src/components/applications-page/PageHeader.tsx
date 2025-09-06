@@ -31,7 +31,7 @@ export default function PageHeader({
   onCancel,
 }: Props) {
   return (
-    <div className="mb-4 overflow-x-auto overflow-y-hidden">
+    <div className="mb-4">
       <div className="flex items-center justify-between gap-3 min-w-[600px]">
         <h1 className="text-4xl font-bold">Applications</h1>
         {!selectionMode ? (
