@@ -8,3 +8,6 @@ export { default as LoginPage } from "./pages/LoginPage";
 export { default as SignupPage } from "./pages/SignupPage";
 export { default as AboutPage } from "./pages/AboutPage";
 export { default as VerifyEmailPage } from "./pages/VerifyEmailPage";
+export { default as PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
+export { default as TermsOfServicePage } from "./pages/TermsOfServicePage";
+export { default as NotFoundPage } from "./pages/NotFoundPage";

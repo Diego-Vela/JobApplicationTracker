@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { 
   RootLayout, HomePage, LoginPage, SignupPage, ApplicationsPage, 
   ApplicationInfoPage, ApplicationNewPage, DocumentsPage, 
-  AboutPage, VerifyEmailPage 
+  AboutPage, VerifyEmailPage, PrivacyPolicyPage, TermsOfServicePage, NotFoundPage
 } from "./index";
 import "./index.css";
 
@@ -22,6 +22,9 @@ const router = createBrowserRouter([
       { path: "documents", element: <DocumentsPage /> }, // /documents
       { path: "about", element: <AboutPage /> }, // /about
       { path: "verify-email", element: <VerifyEmailPage /> }, // /verify-email
+      { path: "privacy", element: <PrivacyPolicyPage /> }, // /privacy-policy
+      { path: "terms", element: <TermsOfServicePage /> }, // /terms-of-service
+      { path: "*", element: <NotFoundPage /> }, // /404
     ],
   },
 ]);
