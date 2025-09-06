@@ -40,59 +40,61 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">Reset your password</h1>
+      <div
+        className="w-full max-w-md rounded-lg bg-white p-8 shadow-md"
+        style={{ marginTop: "-12vh" }}
+      >
+        <h1 className="mb-6 text-center text-3xl font-bold">Reset your password</h1>
 
         {stage === "request" && (
-          <form onSubmit={handleRequest} className="space-y-5">
+          <form onSubmit={handleRequest} className="space-y-5 text-lg px-2 sm:px-6">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+              <label className="mb-1 block text-base font-medium text-gray-700">Email</label>
               <input
                 type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-brand focus:ring focus:ring-brand/30"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg focus:border-brand focus:ring focus:ring-brand/30"
                 required autoComplete="email" disabled={loading}
               />
             </div>
             <button type="submit" disabled={loading}
-              className="w-full rounded-lg bg-brand px-4 py-2 font-medium text-white transition hover:brightness-95 disabled:opacity-60">
+              className="w-full rounded-lg bg-brand px-4 py-2 text-lg font-medium text-white transition hover:brightness-95 disabled:opacity-60">
               {loading ? "Sending..." : "Send reset code"}
             </button>
-            {msg && <p className="text-sm text-green-700">{msg}</p>}
-            {err && <p className="text-sm text-red-600">{err}</p>}
+            {msg && <p className="text-base text-green-700">{msg}</p>}
+            {err && <p className="text-base text-red-600">{err}</p>}
           </form>
         )}
 
         {stage === "confirm" && (
-          <form onSubmit={handleConfirm} className="space-y-5">
+          <form onSubmit={handleConfirm} className="space-y-5 text-lg px-2 sm:px-6">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Verification code</label>
+              <label className="mb-1 block text-base font-medium text-gray-700">Verification code</label>
               <input
                 value={code} onChange={(e) => setCode(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-brand focus:ring focus:ring-brand/30"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg focus:border-brand focus:ring focus:ring-brand/30"
                 required disabled={loading} inputMode="numeric"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">New password</label>
+              <label className="mb-1 block text-base font-medium text-gray-700">New password</label>
               <input
                 type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-brand focus:ring focus:ring-brand/30"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg focus:border-brand focus:ring focus:ring-brand/30"
                 required autoComplete="new-password" disabled={loading}
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Must meet your Cognito password policy.
+              <p className="mt-1 text-sm text-gray-500 text-center">
               </p>
             </div>
             <button type="submit" disabled={loading}
-              className="w-full rounded-lg bg-brand px-4 py-2 font-medium text-white transition hover:brightness-95 disabled:opacity-60">
+              className="w-full rounded-lg bg-brand px-4 py-2 text-lg font-medium text-white transition hover:brightness-95 disabled:opacity-60">
               {loading ? "Updating..." : "Set new password"}
             </button>
-            {msg && <p className="text-sm text-green-700">{msg}</p>}
-            {err && <p className="text-sm text-red-600">{err}</p>}
+            {msg && <p className="text-base text-green-700">{msg}</p>}
+            {err && <p className="text-base text-red-600">{err}</p>}
           </form>
         )}
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-lg text-gray-600">
           <Link to="/login" className="font-medium text-brand hover:underline">
             Back to login
           </Link>

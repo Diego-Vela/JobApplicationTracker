@@ -86,12 +86,15 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">
+      <div
+        className="w-full max-w-lg rounded-xl bg-white p-12 shadow-xl"
+        style={{ minHeight: "480px", marginTop: "-12vh" }} // Move box higher up
+      >
+        <h1 className="mb-8 text-center text-3xl font-bold">
           Log in to <span className="text-brand">Jobblet</span>
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
               Email
@@ -160,7 +163,7 @@ export default function LoginPage() {
           )}
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-8 text-center text-base text-gray-600">
           Don’t have an account?{" "}
           <Link to="/signup" className="font-medium text-brand hover:underline">
             Sign up

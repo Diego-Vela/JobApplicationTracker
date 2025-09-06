@@ -94,15 +94,11 @@ export default function Navbar() {
           Jobblet
         </Link>
 
-        {/* Tabs (desktop) — only when logged in */}
+        {/* Tabs (desktop) — always show */}
         <div className="hidden items-center gap-1 md:flex flex-1 justify-center">
-          {isLoggedIn && (
-            <>
-              <TabLink to="/applications" label="Applications" Icon={Folder} />
-              <TabLink to="/documents" label="Documents" Icon={FileText} />
-              <TabLink to="/about" label="About" Icon={InfoIcon} />
-            </>
-          )}
+          <TabLink to="/applications" label="Applications" Icon={Folder} />
+          <TabLink to="/documents" label="Documents" Icon={FileText} />
+          <TabLink to="/about" label="About" Icon={InfoIcon} />
         </div>
 
         {/* Auth actions (desktop) */}
@@ -152,50 +148,48 @@ export default function Navbar() {
       {menuOpen && (
         <div className="sm:hidden border-t border-white/20">
           <div className="mx-auto w-full max-w-screen-lg min-w-[320px] px-4 py-2">
-            {/* Tabs (mobile) — only when logged in */}
-            {isLoggedIn && (
-              <div className="flex flex-col gap-1 pb-2">
-                <NavLink
-                  to="/applications"
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) =>
-                    [
-                      "flex items-center gap-2 rounded-md px-3 py-2",
-                      isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10",
-                    ].join(" ")
-                  }
-                >
-                  <Folder className="h-4 w-4" aria-hidden />
-                  <span>Applications</span>
-                </NavLink>
-                <NavLink
-                  to="/documents"
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) =>
-                    [
-                      "flex items-center gap-2 rounded-md px-3 py-2",
-                      isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10",
-                    ].join(" ")
-                  }
-                >
-                  <FileText className="h-4 w-4" aria-hidden />
-                  <span>Documents</span>
-                </NavLink>
-                <NavLink
-                  to="/about"
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) =>
-                    [
-                      "flex items-center gap-2 rounded-md px-3 py-2",
-                      isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10",
-                    ].join(" ")
-                  }
-                >
-                  <InfoIcon className="h-4 w-4" aria-hidden />
-                  <span>About</span>
-                </NavLink>
-              </div>
-            )}
+            {/* Tabs (mobile) — always show */}
+            <div className="flex flex-col gap-1 pb-2">
+              <NavLink
+                to="/applications"
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2 rounded-md px-3 py-2",
+                    isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10",
+                  ].join(" ")
+                }
+              >
+                <Folder className="h-4 w-4" aria-hidden />
+                <span>Applications</span>
+              </NavLink>
+              <NavLink
+                to="/documents"
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2 rounded-md px-3 py-2",
+                    isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10",
+                  ].join(" ")
+                }
+              >
+                <FileText className="h-4 w-4" aria-hidden />
+                <span>Documents</span>
+              </NavLink>
+              <NavLink
+                to="/about"
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2 rounded-md px-3 py-2",
+                    isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10",
+                  ].join(" ")
+                }
+              >
+                <InfoIcon className="h-4 w-4" aria-hidden />
+                <span>About</span>
+              </NavLink>
+            </div>
 
             {/* Auth actions (mobile) */}
             {isLoggedIn ? (

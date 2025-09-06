@@ -67,16 +67,18 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">
+      <div
+        className="w-full max-w-lg rounded-xl bg-white p-12 shadow-xl"
+        style={{ minHeight: "480px", marginTop: "-12vh" }} // Move box higher up and make it bigger
+      >
+        <h1 className="mb-6 text-center text-3xl font-bold">
           Create your <span className="text-brand">Jobblet</span> account
         </h1>
 
         {/* Verification notice banner */}
         <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-          After signing up, you’ll receive an email with a verification code.
-          Please check your inbox (and spam folder) and enter that code on the
-          verification page before logging in.
+          After signing up, you’ll receive an email with a verification link.
+          Please check your inbox (and spam folder) and click the link before logging in.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -142,7 +144,7 @@ export default function SignupPage() {
           {err && <p className="text-sm text-red-600">{err}</p>}
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-8 text-center text-base text-gray-600">
           Already have an account?{" "}
           <Link to="/login" className="font-medium text-brand hover:underline">
             Log in
