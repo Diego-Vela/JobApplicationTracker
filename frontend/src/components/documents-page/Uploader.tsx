@@ -21,6 +21,7 @@ export function Uploader({
   const [fileName, setFileName] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [localErr, setLocalErr] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const disabled = uploading || !canUpload;
 
@@ -49,6 +50,27 @@ export function Uploader({
     }
   };
 
+  // Drag & drop handlers
+  const handleDrag = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (disabled) return;
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (disabled) return;
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleChoose(file);
+  };
+
   return (
     <div className="rounded-2xl border p-4">
       <div className="mb-2 flex items-center justify-between">
@@ -67,23 +89,47 @@ export function Uploader({
         </p>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <label
+        htmlFor="file-upload"
+        className={[
+          "flex flex-col gap-3 sm:flex-row sm:items-center rounded-xl border-2 border-dashed p-4 transition-colors cursor-pointer",
+          dragActive ? "border-brand bg-brand/10" : "border-gray-300 bg-white hover:border-brand",
+          disabled ? "opacity-60 cursor-not-allowed" : "",
+        ].join(" ")}
+        onDragEnter={handleDrag}
+        onDragOver={handleDrag}
+        onDragLeave={handleDrag}
+        onDrop={handleDrop}
+        tabIndex={0}
+      >
         <input
           ref={inputRef}
+          id="file-upload"
           type="file"
           accept={ACCEPTED_MIME.join(",")}
           onChange={(e) => handleChoose(e.target.files?.[0] || null)}
           disabled={disabled}
-          className="block w-full cursor-pointer file:cursor-pointer rounded-xl border p-2 text-lg file:mr-3 file:rounded-lg file:border file:bg-muted file:px-3 file:py-1.5 file:text-lg file:font-medium"
+          className="hidden"
         />
-        <input
-          type="text"
-          placeholder="Optional label (e.g. 'Academic CV')"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          disabled={uploading}
-          className="w-full rounded-xl border p-2 text-lg"
-        />
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-lg">
+              {selectedFile
+                ? `Selected: ${fileName}`
+                : dragActive
+                ? "Drop file here…"
+                : "Click or drag file here to upload"}
+            </span>
+          </div>
+          <input
+            type="text"
+            placeholder="Optional label (e.g. 'Academic CV')"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            disabled={uploading}
+            className="mt-2 w-full rounded-xl border p-2 text-lg"
+          />
+        </div>
         <button
           type="button"
           onClick={handleUpload}
@@ -92,9 +138,8 @@ export function Uploader({
         >
           {uploading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading…</>) : (<>Upload</>)}
         </button>
-      </div>
+      </label>
 
-      {fileName && <p className="mt-2 text-xs text-muted-foreground">Selected: {fileName}</p>}
       {localErr && (
         <p className="mt-2 flex items-center gap-1 text-xs text-red-700">
           <AlertCircle className="h-4 w-4" /> {localErr}

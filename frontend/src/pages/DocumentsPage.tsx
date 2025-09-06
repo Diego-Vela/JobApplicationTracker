@@ -12,6 +12,12 @@ export default function DocumentsPage() {
   const cvs = useDocs("cv");
   const current = tab === "resume" ? resumes : cvs;
 
+  // Define tab keys and labels for documents
+  const DOC_TABS: { key: DocType; label: string }[] = [
+    { key: "resume", label: "Resumes" },
+    { key: "cv", label: "CVs" },
+  ];
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="mb-4 flex items-center justify-between">
@@ -23,18 +29,30 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      <div className="mb-6 inline-flex overflow-hidden rounded-2xl border bg-background">
-        <button
-          onClick={() => setTab("resume")}
-          className={`px-4 py-2 text-xl font-medium transition ${tab === "resume" ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
-          aria-pressed={tab === "resume"}
-        >Resumes</button>
-        <button
-          onClick={() => setTab("cv")}
-          className={`px-4 py-2 text-xl font-medium transition ${tab === "cv" ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
-          aria-pressed={tab === "cv"}
-        >CVs</button>
-      </div>
+      {/* Use Tabs component for document tabs */}
+      <nav className="mb-6 overflow-x-auto">
+        <ul className="flex gap-2">
+          {DOC_TABS.map((t) => {
+            const active = tab === t.key;
+            return (
+              <li key={t.key}>
+                <button
+                  onClick={() => setTab(t.key)}
+                  className={[
+                    "whitespace-nowrap rounded-full px-4 py-2 text-xl hover:cursor-pointer",
+                    active
+                      ? "bg-brand text-white hover:bg-brand"
+                      : "border text-gray-700 hover:bg-gray-100",
+                  ].join(" ")}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {t.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
       <Uploader
         key={tab}

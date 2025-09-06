@@ -8,6 +8,8 @@ type Props = {
   selectionMode: boolean;
   selectedCount: number;
   bulkBusy?: boolean;
+  count: number;
+  maxCount: number;
 
   onToggleSelectionMode: () => void;
   onClearSelection: () => void;
@@ -16,12 +18,14 @@ type Props = {
   onBulkMove: (status: UIStatus) => void;
   onRefresh: () => void;
   onCancel?: () => void;
-};
-
+  disableAdd?: boolean;
+}
 export default function PageHeader({
   selectionMode,
   selectedCount,
   bulkBusy,
+  count,
+  maxCount,
   onToggleSelectionMode,
   onClearSelection,
   onSelectAll,
@@ -29,11 +33,17 @@ export default function PageHeader({
   onBulkMove,
   onRefresh,
   onCancel,
+  disableAdd,
 }: Props) {
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between gap-3 min-w-[600px]">
-        <h1 className="text-4xl font-bold">Applications</h1>
+        <h1 className="text-4xl font-bold flex items-center gap-3">
+          Applications
+          <span className="text-base font-normal text-gray-500">
+            {count}/{maxCount}
+          </span>
+        </h1>
         {!selectionMode ? (
           <div className="flex items-center gap-2">
             <button
@@ -43,7 +53,7 @@ export default function PageHeader({
               <Edit className="h-5 w-5" aria-hidden /> {/* Edit icon */}
               Edit
             </button>
-            <HeaderActions onRefresh={onRefresh} />
+            <HeaderActions onRefresh={onRefresh} disableAdd={disableAdd} />
           </div>
         ) : (
           <BulkActions

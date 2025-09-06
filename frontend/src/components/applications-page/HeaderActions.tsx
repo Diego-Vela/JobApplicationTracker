@@ -4,9 +4,9 @@ import { RefreshCw} from "lucide-react"; // <-- Add icons
 
 type Props = {
   onRefresh: () => void;
+  disableAdd?: boolean;
 };
-
-export default function HeaderActions({ onRefresh }: Props) {
+export default function HeaderActions({ onRefresh, disableAdd = false }: Props) {
   return (
     <div className="flex items-center gap-2">
       <button
@@ -18,7 +18,9 @@ export default function HeaderActions({ onRefresh }: Props) {
       </button>
       <Link
         to="/applications/new"
-        className="rounded-lg bg-brand px-4 py-2 text-xl font-medium text-white hover:brightness-95 flex items-center gap-2"
+        className={`rounded-lg bg-brand px-4 py-2 text-xl font-medium text-white hover:brightness-95 flex items-center gap-2 ${disableAdd ? "opacity-60 pointer-events-none" : ""}`}
+        aria-disabled={disableAdd}
+        tabIndex={disableAdd ? -1 : 0}
       >
         + Add Application
       </Link>

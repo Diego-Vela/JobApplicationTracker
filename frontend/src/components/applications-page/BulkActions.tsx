@@ -66,14 +66,14 @@ export default function BulkActions({
       <button
         onClick={onBulkDelete}
         disabled={selectedCount === 0 || bulkBusy}
-        className="rounded-lg border border-red-300 px-3 py-2 text-lg text-red-700 hover:bg-red-50 disabled:opacity-60"
+        className="rounded-lg border border-red-500 px-3 py-2 text-lg text-red-700 hover:bg-red-50 disabled:opacity-60"
       >
         Delete
       </button>
 
       <button
         onClick={onCancel}
-        className="rounded-lg px-3 py-2 text-lg hover:bg-gray-100"
+        className="rounded-lg px-3 py-2 text-lg hover:bg-gray-100 border"
       >
         Cancel
       </button>

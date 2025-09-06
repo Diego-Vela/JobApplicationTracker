@@ -280,6 +280,10 @@ def list_resumes(
         for r in rows
     ]
 
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
 @router.delete("/resumes/{resume_id}", status_code=204)
 def delete_resume(
     request: Request,
@@ -288,24 +292,42 @@ def delete_resume(
 ):
     user_id = _require_user_id(request)
 
-    r = db.query(models.Resume).filter(
-        models.Resume.resume_id == resume_id,
-        models.Resume.user_id == user_id
-    ).first()
+    r = (
+        db.query(models.Resume)
+        .filter(
+            models.Resume.resume_id == resume_id,
+            models.Resume.user_id == user_id,
+        )
+        .first()
+    )
     if not r:
-        raise HTTPException(404, "Resume not found")
+        raise HTTPException(status_code=404, detail="Resume not found")
 
-    # Try to delete the S3 object first (safe to ignore if missing)
+    linked_q = db.query(models.Application).filter(
+        models.Application.user_id == user_id,
+        models.Application.resume_id == resume_id,
+    )
+
+    linked_q.update({models.Application.resume_id: None}, synchronize_session=False)
+
+    db.delete(r)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Resume is still referenced by other records and cannot be deleted.",
+        )
+
     if r.resume_url:
         key = key_from_url(r.resume_url)
         try:
             s3.delete_object(Bucket=S3_BUCKET, Key=key)
         except ClientError:
-            # Ignore S3 delete failures so the DB row can still be removed
             pass
-
-    db.delete(r)
-    db.commit()
+    return
 
 # -------------------- CV --------------------
 @router.post("/cv", response_model=schemas.CVOut, status_code=201)

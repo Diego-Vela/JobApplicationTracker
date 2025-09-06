@@ -12,6 +12,7 @@ import {
 
 import { useApplications } from "../hooks/useApplications";
 import type { TabKey, UIStatus } from "../components/types";
+import { MAX_TOTAL_APPLICATIONS } from "../components/types";
 
 export default function ApplicationsPage() {
   const [active, setActive] = useState<TabKey>("all");
@@ -106,6 +107,9 @@ export default function ApplicationsPage() {
         onBulkMove={(next: UIStatus) => bulkMove(next as any)}
         onRefresh={refresh}
         onCancel={() => setSelectionMode(false)}
+        count={items?.length ?? 0}
+        maxCount={MAX_TOTAL_APPLICATIONS}
+        disableAdd={items?.length >= MAX_TOTAL_APPLICATIONS} // <-- pass disableAdd
       />
 
       {/* Search within current tab */}
@@ -116,7 +120,6 @@ export default function ApplicationsPage() {
         onChange={(t) => {
           setActive(t);
           setStatus(t === "all" ? "all" : (t as any));
-          // keep selectionMode state as-is
         }}
       />
 

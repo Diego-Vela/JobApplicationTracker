@@ -35,7 +35,6 @@ export class APIError extends Error {
 
 async function getIdToken(): Promise<string | null> {
   const session = await fetchAuthSession()
-  console.log('Auth session:', session)
   const id = session.tokens?.idToken
   return id ? id.toString() : null
 }
