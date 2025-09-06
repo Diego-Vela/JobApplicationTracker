@@ -1,6 +1,8 @@
+// src/components/Navbar.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, Link, NavLink, useLocation } from "react-router-dom";
-import { getToken, clearToken } from "../api";
+import { logout, getCurrentUser } from "../api";
+import { Hub } from "aws-amplify/utils"; // listen for Cognito auth events
 import {
   Folder,
   FileText,
@@ -12,25 +14,44 @@ import {
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getToken());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Refresh login state (current Cognito user or null)
+  const refreshAuth = async () => {
+    const user = await getCurrentUser(); // from api.ts (Amplify)
+    setIsLoggedIn(!!user);
+  };
+
   useEffect(() => {
-    const sync = () => setIsLoggedIn(!!getToken());
-    window.addEventListener("storage", sync);        // other tabs
-    window.addEventListener("auth-changed", sync);   // same tab
-    return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener("auth-changed", sync);
-    };
+    // Initial check
+    refreshAuth();
+
+    // Listen to Amplify Auth events (signIn, signOut, token refresh, etc.)
+    const unsub = Hub.listen("auth", () => {
+      refreshAuth();
+    });
+
+    // Also refresh when route changes (useful after redirects)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => unsub();
   }, []);
 
-  const handleSignOut = () => {
-    clearToken();
-    window.dispatchEvent(new Event("auth-changed"));
-    setIsLoggedIn(false);
-    navigate("/");
+  useEffect(() => {
+    // Re-check on route changes (helps in SPA flows)
+    refreshAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  const handleSignOut = async () => {
+    try {
+      await logout(); // clears Amplify session
+    } finally {
+      setIsLoggedIn(false);
+      setMenuOpen(false);
+      navigate("/");
+    }
   };
 
   const TabLink = ({
@@ -51,6 +72,7 @@ export default function Navbar() {
         ].join(" ")
       }
       aria-current={location.pathname.startsWith(to) ? "page" : undefined}
+      onClick={() => setMenuOpen(false)}
     >
       <Icon className="h-4 w-4" aria-hidden />
       <span>{label}</span>
@@ -59,7 +81,6 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-10 bg-brand text-white shadow">
-
       <nav
         className="mx-auto flex w-full max-w-screen-lg min-w-[320px] items-center justify-between px-4 py-3"
         aria-label="Primary"
@@ -171,7 +192,7 @@ export default function Navbar() {
                   }
                 >
                   <InfoIcon className="h-4 w-4" aria-hidden />
-                  <span>Profile</span>
+                  <span>About</span>
                 </NavLink>
               </div>
             )}
@@ -179,10 +200,7 @@ export default function Navbar() {
             {/* Auth actions (mobile) */}
             {isLoggedIn ? (
               <button
-                onClick={() => {
-                  handleSignOut();
-                  setMenuOpen(false);
-                }}
+                onClick={handleSignOut}
                 className="mt-1 flex w-full items-center gap-2 rounded-md bg-white px-3 py-2 text-blue-700 hover:bg-gray-100"
               >
                 <LogOut className="h-4 w-4" aria-hidden />

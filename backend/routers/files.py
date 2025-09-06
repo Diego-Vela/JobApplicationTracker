@@ -1,7 +1,7 @@
 # app/routers/files.py
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, HTTPException, status, Query, Request, Depends
 from sqlalchemy.orm import Session
-from ..deps import get_db, get_current_user_id
+from ..deps import get_db  # keep DB dependency only
 from .. import models, schemas
 from botocore.config import Config
 from urllib.parse import urlparse
@@ -25,10 +25,25 @@ ALLOWED_CT  = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 }
 
-s3 = boto3.client("s3", region_name=S3_REGION, config=Config(signature_version="s3v4", s3={"addressing_style": "virtual"}),)
+s3 = boto3.client(
+    "s3",
+    region_name=S3_REGION,
+    config=Config(signature_version="s3v4", s3={"addressing_style": "virtual"}),
+)
 
 # -------------------- Helpers --------------------
 SAFE_CHARS = re.compile(r"[^A-Za-z0-9._-]+")
+
+def _require_user_id(request: Request) -> str:
+    """
+    Pull the authenticated user_id from request.state.user_id.
+    Your router-level auth dependency (added in main.py) must set this.
+    """
+    uid = getattr(request.state, "user_id", None)
+    if not uid:
+        # Auth dependency not attached, or didn't set state
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return uid
 
 def safe_download_name(name: str, fallback_ext: str = "") -> str:
     """
@@ -73,7 +88,7 @@ def key_from_url(url: str) -> str:
     """
     Extract the object key from URLs like:
       https://<bucket>.s3.<region>.amazonaws.com/<key>
-      https://<cloudfront-domain>/<key>           
+      https://<cloudfront-domain>/<key>
     """
     p = urlparse(url)
     return p.path.lstrip("/")  # everything after the first '/'
@@ -97,10 +112,12 @@ def verify_s3_object(url: str, max_size: int = MAX_SIZE):
 # -------------------- Presign --------------------
 @router.post("/presign")
 def presign_upload(
+    request: Request,
     filename: str = Query(..., min_length=1, max_length=255),
     content_type: str | None = None,
-    user_id: str = Depends(get_current_user_id),
 ):
+    user_id = _require_user_id(request)
+
     clean_name = sanitize_filename(filename)
     ct = (content_type or mimetypes.guess_type(clean_name)[0] or "application/octet-stream").lower()
     if ct not in ALLOWED_CT:
@@ -128,8 +145,8 @@ def presign_upload(
         post_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com"
 
         return {
-            "url": post_url,                 # <- use regional URL
-            "fields": presigned["fields"],   # <- form fields to include
+            "url": post_url,               # <- use regional URL
+            "fields": presigned["fields"], # <- form fields to include
             "file_url": public_url_for(key),
             "key": key,
             "content_type": ct,
@@ -140,12 +157,12 @@ def presign_upload(
 
 @router.get("/presign-get")
 def presign_get(
+    request: Request,
     kind: Literal["resume", "cv"] | None = None,
     item_id: str | None = None,
     key: str | None = None,
     url: str | None = None,
     disposition: Literal["inline", "attachment"] = "attachment",  # NEW
-    user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     """
@@ -153,6 +170,8 @@ def presign_get(
     Preferred inputs: kind + item_id (so we can use label/file_name).
     Falls back to url/key if needed (ownership still enforced).
     """
+    user_id = _require_user_id(request)
+
     obj_url: str | None = None
     label: str | None = None
     original_name: str | None = None
@@ -199,7 +218,7 @@ def presign_get(
     # 1) prefer label (user-friendly), else original file_name
     # 2) ensure it has the right extension (fall back from key)
     _, key_ext = os.path.splitext(key)
-    # If I know the content type, we could map to an ext; key_ext is fine for now
+    # If we know the content type, we could map to an ext; key_ext is fine for now
     preferred = (label or original_name or os.path.basename(key)) or "download"
     friendly_name = safe_download_name(preferred, fallback_ext=key_ext)
 
@@ -221,9 +240,16 @@ def presign_get(
     except ClientError as e:
         msg = e.response.get("Error", {}).get("Message", "Cannot presign download")
         raise HTTPException(status_code=500, detail=msg)
+
 # -------------------- Resumes --------------------
 @router.post("/resumes", response_model=schemas.ResumeOut, status_code=201)
-def create_resume(meta: schemas.FileMetaIn, user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def create_resume(
+    request: Request,
+    meta: schemas.FileMetaIn,
+    db: Session = Depends(get_db),
+):
+    user_id = _require_user_id(request)
+
     verify_s3_object(meta.url)  # <- verification
     rec = models.Resume(user_id=user_id, resume_url=meta.url, file_name=meta.file_name, label=meta.label)
     db.add(rec); db.commit(); db.refresh(rec)
@@ -233,12 +259,35 @@ def create_resume(meta: schemas.FileMetaIn, user_id: str = Depends(get_current_u
     )
 
 @router.get("/resumes", response_model=list[schemas.ResumeOut])
-def list_resumes(user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
-    rows = db.query(models.Resume).filter(models.Resume.user_id == user_id).order_by(models.Resume.uploaded_at.desc()).all()
-    return [schemas.ResumeOut(resume_id=r.resume_id, file_name=r.file_name, label=r.label, resume_url=r.resume_url, uploaded_at=r.uploaded_at) for r in rows]
+def list_resumes(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user_id = _require_user_id(request)
+
+    rows = (db.query(models.Resume)
+              .filter(models.Resume.user_id == user_id)
+              .order_by(models.Resume.uploaded_at.desc())
+              .all())
+    return [
+        schemas.ResumeOut(
+            resume_id=r.resume_id,
+            file_name=r.file_name,
+            label=r.label,
+            resume_url=r.resume_url,
+            uploaded_at=r.uploaded_at
+        )
+        for r in rows
+    ]
 
 @router.delete("/resumes/{resume_id}", status_code=204)
-def delete_resume(resume_id: str, user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def delete_resume(
+    request: Request,
+    resume_id: str,
+    db: Session = Depends(get_db),
+):
+    user_id = _require_user_id(request)
+
     r = db.query(models.Resume).filter(
         models.Resume.resume_id == resume_id,
         models.Resume.user_id == user_id
@@ -260,7 +309,13 @@ def delete_resume(resume_id: str, user_id: str = Depends(get_current_user_id), d
 
 # -------------------- CV --------------------
 @router.post("/cv", response_model=schemas.CVOut, status_code=201)
-def create_cv(meta: schemas.FileMetaIn, user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def create_cv(
+    request: Request,
+    meta: schemas.FileMetaIn,
+    db: Session = Depends(get_db),
+):
+    user_id = _require_user_id(request)
+
     verify_s3_object(meta.url)  # <- NEW verification
     rec = models.CV(user_id=user_id, cv_url=meta.url, file_name=meta.file_name, label=meta.label)
     db.add(rec); db.commit(); db.refresh(rec)
@@ -270,12 +325,35 @@ def create_cv(meta: schemas.FileMetaIn, user_id: str = Depends(get_current_user_
     )
 
 @router.get("/cv", response_model=list[schemas.CVOut])
-def list_cv(user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
-    rows = db.query(models.CV).filter(models.CV.user_id == user_id).order_by(models.CV.uploaded_at.desc()).all()
-    return [schemas.CVOut(cv_id=r.cv_id, file_name=r.file_name, label=r.label, cv_url=r.cv_url, uploaded_at=r.uploaded_at) for r in rows]
+def list_cv(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user_id = _require_user_id(request)
+
+    rows = (db.query(models.CV)
+              .filter(models.CV.user_id == user_id)
+              .order_by(models.CV.uploaded_at.desc())
+              .all())
+    return [
+        schemas.CVOut(
+            cv_id=r.cv_id,
+            file_name=r.file_name,
+            label=r.label,
+            cv_url=r.cv_url,
+            uploaded_at=r.uploaded_at
+        )
+        for r in rows
+    ]
 
 @router.delete("/cv/{cv_id}", status_code=204)
-def delete_cv(cv_id: str, user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def delete_cv(
+    request: Request,
+    cv_id: str,
+    db: Session = Depends(get_db),
+):
+    user_id = _require_user_id(request)
+
     r = db.query(models.CV).filter(
         models.CV.cv_id == cv_id,
         models.CV.user_id == user_id
@@ -292,4 +370,3 @@ def delete_cv(cv_id: str, user_id: str = Depends(get_current_user_id), db: Sessi
 
     db.delete(r)
     db.commit()
-

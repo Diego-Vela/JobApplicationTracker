@@ -1,58 +1,75 @@
+// src/pages/LoginPage.tsx
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { setToken } from "../api";
+import { login, resendVerification } from "../api"; // <-- from your new api.ts
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
   // prefill from signup redirect if available
-  const prefillEmail = (location.state as { emailPrefill?: string })?.emailPrefill ?? "";
+  const prefillEmail =
+    (location.state as { emailPrefill?: string })?.emailPrefill ?? "";
 
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resentMsg, setResentMsg] = useState<string | null>(null);
 
   async function handleSubmit(ev: React.FormEvent) {
     ev.preventDefault();
     setErr(null);
+    setResentMsg(null);
+    setNeedsVerification(false);
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // include this if your backend sets cookies on login
-        // credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+      // Cognito sign-in via Amplify; tokens are stored by the library
+      await login(email, password);
 
-      if (!res.ok) {
-        let detail = "Login failed";
-        try {
-          const body = await res.json();
-          detail = body?.detail || detail;
-        } catch { /* ignore */ }
-        throw new Error(detail);
-      }
-
-      const data = await res.json(); // { access_token, token_type }
-      if (!data?.access_token) throw new Error("No token returned");
-      setToken(data.access_token);
-      navigate("/applications");
-
-      // If backend returns a token, you could store it (for now in localStorage).
-      // ⚠️ NOTE: httpOnly cookies are safer than localStorage for prod.
-      if (data?.access_token) {
-        localStorage.setItem("token", data.access_token);
-      }
-
+      // If sign-in succeeds, just go to apps.
       navigate("/applications");
     } catch (e: any) {
-      setErr(e.message || "Login failed");
+      // Common Amplify/Cognito errors:
+      //  - "UserNotConfirmedException": user must verify email
+      //  - "NotAuthorizedException": bad credentials
+      //  - "UserNotFoundException": no such user
+      const name = e?.name || e?.code;
+
+      if (name === "UserNotConfirmedException") {
+        setNeedsVerification(true);
+        setErr("Please verify your email to continue.");
+      } else if (name === "NotAuthorizedException") {
+        setErr("Incorrect email or password.");
+      } else if (name === "UserNotFoundException") {
+        setErr("No account found with that email.");
+      } else if (typeof e?.message === "string") {
+        setErr(e.message);
+      } else {
+        setErr("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setErr(null);
+    setResentMsg(null);
+    try {
+      await resendVerification(email);
+      setResentMsg("Verification email sent. Check your inbox and spam folder.");
+    } catch (e: any) {
+      const name = e?.name || e?.code;
+      if (name === "LimitExceededException") {
+        setErr("Too many attempts. Please wait a bit before trying again.");
+      } else if (typeof e?.message === "string") {
+        setErr(e.message);
+      } else {
+        setErr("Could not resend verification email.");
+      }
     }
   }
 
@@ -105,6 +122,32 @@ export default function LoginPage() {
           </button>
 
           {err && <p className="text-sm text-red-600">{err}</p>}
+
+          {needsVerification && (
+            <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+              <p className="mb-2">
+                Your email isn’t verified yet. Enter the code sent to your inbox on the verification page,
+                or resend the email below.
+              </p>
+              <div className="flex gap-2">
+                <Link
+                  to="/verify-email"
+                  state={{ emailPrefill: email }}
+                  className="rounded-md bg-amber-600 px-3 py-1.5 text-white hover:brightness-110"
+                >
+                  Go to Verify
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  className="rounded-md border border-amber-600 px-3 py-1.5 text-amber-700 hover:bg-amber-100"
+                >
+                  Resend Email
+                </button>
+              </div>
+              {resentMsg && <p className="mt-2 text-amber-700">{resentMsg}</p>}
+            </div>
+          )}
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">

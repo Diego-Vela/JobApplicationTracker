@@ -1,125 +1,134 @@
-export const API_URL = import.meta.env.VITE_API_URL as string;
+// src/api.ts
+import { Amplify } from 'aws-amplify'
+import {
+  signUp, confirmSignUp, resendSignUpCode,
+  signIn, signOut, fetchAuthSession, getCurrentUser as amplifyGetCurrentUser,
+} from 'aws-amplify/auth'
 
-/** Token helpers (already fine) */
-export function getToken() {
-  return localStorage.getItem("token");
-}
-export function setToken(newToken: string) {
-  if (newToken) {
-    localStorage.setItem("token", newToken);
-  } else {
-    localStorage.removeItem("token");
-  }
-  // 🔑 Tell listeners (Navbar) the auth state changed
-  window.dispatchEvent(new Event("auth-changed"));
-}
+const {
+  VITE_API_URL,
+  VITE_COGNITO_USER_POOL_ID,
+  VITE_COGNITO_USER_POOL_CLIENT_ID,
+} = import.meta.env
 
-export function clearToken() {
-  localStorage.removeItem("token");
-}
+if (!VITE_API_URL) throw new Error('VITE_API_URL is not set')
 
-/** Build headers with Authorization when a token exists */
-function authHeaders(extra: HeadersInit = {}): HeadersInit {
-  const token = getToken();
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...extra,
-  };
-}
-
-/** handle 401s in one place */
-async function handleJsonOrThrow(res: Response, verb: string, path: string) {
-  if (!res.ok) {
-    if (res.status === 401) {
-      // token is invalid/expired—log out globally
-      clearToken();
-      // Optionally redirect:
-      // window.location.href = "/login";
-    }
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data?.detail || `${verb} ${path} failed (${res.status})`);
-  }
-  return res.json();
-}
-
-/** GET with automatic Authorization */
-export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "GET",
-    headers: authHeaders(init?.headers),
-    ...init,
-  });
-  return handleJsonOrThrow(res, "GET", path);
-}
-
-/** POST with automatic Authorization (you had this already) */
-export async function apiPost<T, B = unknown>(path: string, body?: B): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "POST",
-    headers: authHeaders({ "Content-Type": "application/json" }),
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  return handleJsonOrThrow(res, "POST", path);
-}
-
-/** (Nice to have) PUT/PATCH/DELETE with auth */
-export async function apiPut<T, B = unknown>(path: string, body?: B): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "PUT",
-    headers: authHeaders({ "Content-Type": "application/json" }),
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  return handleJsonOrThrow(res, "PUT", path);
-}
-export async function apiDelete(path: string): Promise<void> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "DELETE",
-    headers: {
-      "Authorization": `Bearer ${getToken()}`,
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      userPoolId: VITE_COGNITO_USER_POOL_ID,
+      userPoolClientId: VITE_COGNITO_USER_POOL_CLIENT_ID,
     },
-  });
+  },
+})
 
-  if (!res.ok) {
-    // Try to extract error text/json, but tolerate empties
-    const ct = res.headers.get("content-type") || "";
-    let message = `Request failed (${res.status})`;
-    try {
-      if (ct.includes("application/json")) {
-        const data = await res.json();
-        message = data?.detail || data?.message || message;
-      } else {
-        const txt = await res.text();
-        if (txt) message = txt;
-      }
-    } catch {
-      /* ignore parse errors */
-    }
-    throw new Error(message);
+export class APIError extends Error {
+  status: number
+  data: any
+  constructor(message: string, status: number, data: any) {
+    super(message); this.status = status; this.data = data
   }
-
-  // Success: do not parse json for DELETE
-  return;
 }
 
-export async function apiSend<T>(path: string, method: string, body?: any): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
+async function getIdToken(): Promise<string | null> {
+  const session = await fetchAuthSession()
+  console.log('Auth session:', session)
+  const id = session.tokens?.idToken
+  return id ? id.toString() : null
+}
+
+async function authHeaders(extra: HeadersInit = {}): Promise<HeadersInit> {
+  const tok = await getIdToken()
+  return tok ? { ...extra, Authorization: `Bearer ${tok}` } : extra
+}
+
+type Json = Record<string, any> | any[] | null
+type FetchOpts = Omit<RequestInit, 'headers' | 'body'> & { headers?: HeadersInit }
+type Expect = 'json' | 'none' | 'text'
+
+async function request<T = any>(
+  path: string,
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  body?: Json,
+  expect: Expect = 'json',
+  opts: FetchOpts = {},
+): Promise<T> {
+  const url = `${VITE_API_URL}${path}` 
+  const baseHeaders: HeadersInit = body == null
+    ? { ...(opts.headers || {}) }
+    : { 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  const headers = await authHeaders(baseHeaders)
+
+  const res = await fetch(url, {
+    ...opts,
     method,
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-      ...(body ? { "Content-Type": "application/json" } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+    headers,
+    body: body == null ? undefined : JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    let data: any = null
+    try { data = await res.json() } catch {}
+    const msg = (data && (data.detail || data.message)) || `HTTP ${res.status}`
+    throw new APIError(msg, res.status, data)
+  }
+
+  if (expect === 'none' || res.status === 204) return null as T
+  if (expect === 'text') return (await res.text()) as T
+  return (await res.json()) as T
 }
 
-/** PATCH with automatic Authorization */
-export async function apiPatch<T, B = unknown>(path: string, body?: B): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "PATCH",
-    headers: authHeaders({ "Content-Type": "application/json" }),
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  return handleJsonOrThrow(res, "PATCH", path);
+/* ====== Exported modular helpers ====== */
+export const apiGet    = <T=any>(path: string, opts?: FetchOpts) => request<T>(path, 'GET', undefined, 'json', opts)
+export const apiGetText= (path: string, opts?: FetchOpts)       => request<string>(path, 'GET', undefined, 'text', opts)
+export const apiPost   = <T=any>(path: string, body?: Json, opts?: FetchOpts) => request<T>(path, 'POST', body, 'json', opts)
+export const apiPatch  = <T=any>(path: string, body?: Json, opts?: FetchOpts) => request<T>(path, 'PATCH', body, 'json', opts)
+export const apiDelete = (path: string, opts?: FetchOpts)       => request<null>(path, 'DELETE', undefined, 'none', opts)
+
+/* ====== Auth (Cognito) ====== */
+export const register            = (email: string, password: string) => signUp({ username: email, password, options: { userAttributes: { email } } })
+export const confirmEmail        = (email: string, code: string)     => confirmSignUp({ username: email, confirmationCode: code })
+export const resendVerification  = (email: string)                   => resendSignUpCode({ username: email })
+export const login               = (email: string, password: string) => signIn({ username: email, password })
+export const logout              = () => signOut()
+export async function getCurrentUser() { try { return await amplifyGetCurrentUser() } catch { return null } }
+
+/* ====== Example domain wrappers (optional) ======
+   You can keep or remove these; they just call the generic helpers. */
+
+export const ApplicationsAPI = {
+  list: () => apiGet('/applications'),
+  get: (id: string) => apiGet(`/applications/${id}`),
+  create: (payload: any) => apiPost('/applications', payload),
+  update: (id: string, patch: any) => apiPatch(`/applications/${id}`, patch),
+  remove: (id: string) => apiDelete(`/applications/${id}`),
+  bulkMove: (ids: string[], status: string) => apiPost('/applications/bulk-move', { ids, status }),
+  bulkDelete: (ids: string[]) => apiPost('/applications/bulk-delete', { ids }),
+  search: (q: string) => apiGet(`/applications/search?q=${encodeURIComponent(q)}`),
+}
+
+export const FilesAPI = {
+  presignUpload: (filename: string, contentType?: string) =>
+    apiPost('/files/presign', { filename, content_type: contentType }),
+  createResume: (meta: { url: string; file_name: string; label?: string }) =>
+    apiPost('/files/resumes', meta),
+  listResumes: () => apiGet('/files/resumes'),
+  deleteResume: (id: string) => apiDelete(`/files/resumes/${id}`),
+
+  createCV: (meta: { url: string; file_name: string; label?: string }) =>
+    apiPost('/files/cv', meta),
+  listCVs: () => apiGet('/files/cv'),
+  deleteCV: (id: string) => apiDelete(`/files/cv/${id}`),
+
+  presignGet: (params: {
+    kind?: 'resume' | 'cv'; item_id?: string; key?: string; url?: string; disposition?: 'inline' | 'attachment'
+  }) => apiGet(`/files/presign-get${toQuery(params)}`),
+}
+
+function toQuery(obj: Record<string, any>) {
+  const s = Object.entries(obj)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join('&')
+  return s ? `?${s}` : ''
 }

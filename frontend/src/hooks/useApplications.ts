@@ -1,224 +1,160 @@
-// hooks/useApplications.ts
-import { useState, useCallback, useEffect, useMemo } from "react";
-import { apiGet, API_URL, getToken } from "../api";
-import type {
-  Application,
-  TabKey,
-  UIStatus,
-  APIStatus,
-} from "../components/types";
-import { API_TO_UI } from "../components/statusMaps";
+// src/features/applications/useApplications.ts
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { apiGet, apiPost, apiPatch, apiDelete } from "../api"
+import type { Application, APIStatus } from "../components/types"
 
-export function useApplications(active: TabKey) {
-  const [apps, setApps] = useState<Application[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
+type FetchParams = {
+  status?: APIStatus | "all"
+  q?: string
+}
 
-  // ---selection state ---
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkBusy, setBulkBusy] = useState(false);
-  const [overrides, setOverrides] = useState<Record<string, UIStatus>>({});
+export function useApplications(initial: FetchParams = {}) {
+  const [items, setItems] = useState<Application[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // ---search query from search bar---
-  const [search, setSearch] = useState("");
+  const [q, setQ] = useState(initial.q ?? "")
+  const [status, setStatus] = useState<APIStatus | "all">(initial.status ?? "all")
 
-  // --- selection helpers ---
-  function toggleSelectionMode() {
-    setSelectionMode((s) => {
-      if (!s) setSelected(new Set());
-      return !s;
-    });
-  }
-  function toggleOne(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }
-  function clearSelection() {
-    setSelected(new Set());
-    setSelectionMode(false);
-  }
-  function selectAllOnPage() {
-    if (!apps) return;
-    setSelected(new Set(apps.map((a) => a.application_id)));
-  }
+  // selection for bulk ops
+  const [selected, setSelected] = useState<Record<string, boolean>>({})
 
-  // --- bulk actions ---
-  async function bulkMoveStatus(next: UIStatus) {
-    if (selected.size === 0) return;
-    setBulkBusy(true);
+  const listQuery = useMemo(() => {
+    const s = new URLSearchParams()
+    if (q) s.set("q", q)
+    if (status && status !== "all") s.set("status", status)
+    return s.toString()
+  }, [q, status])
+
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      await Promise.all(
-        Array.from(selected).map((id) =>
-          fetch(`${API_URL}/applications/${id}/move?new_status=${next}`, {
-            method: "POST",
-            headers: { ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
-          }).then(async (res) => {
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              throw new Error(data?.detail || `Move failed (${res.status})`);
-            }
-          })
-        )
-      );
-      await reload();
-      clearSelection();
-    } finally {
-      setBulkBusy(false);
-    }
-  }
-
-  async function bulkDelete() {
-    if (selected.size === 0) return;
-    setBulkBusy(true);
-    try {
-      await Promise.all(
-        Array.from(selected).map((id) =>
-          fetch(`${API_URL}/applications/${id}`, {
-            method: "DELETE",
-            headers: { ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
-          }).then(async (res) => {
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              throw new Error(data?.detail || `Delete failed (${res.status})`);
-            }
-          })
-        )
-      );
-      await reload();
-      clearSelection();
-    } finally {
-      setBulkBusy(false);
-    }
-  }
-
-  // --- status display helper ---
-  function getDisplayedStatus(a: Application): UIStatus {
-    const o = overrides[a.application_id];
-    if (o) return o;
-    const api = (a.status ?? "applied") as APIStatus;
-    return API_TO_UI[api];
-  }
-
-  function setOverride(appId: string, next: UIStatus) {
-    setOverrides((prev) => ({ ...prev, [appId]: next }));
-  }
-
-  // --- search helpers ---
-  // parse a date or range inside the search string; everything else is text
-  function parseSearch(input: string) {
-    const s = input.trim();
-    if (!s) return { text: "", from: null as Date | null, to: null as Date | null };
-
-    // range formats supported: "YYYY-MM-DD..YYYY-MM-DD", "MM/DD/YYYY to MM/DD/YYYY"
-    const rangeMatch = s.match(/(.+)\s*(?:\.\.|to|-)\s*(.+)/i);
-    if (rangeMatch) {
-      const d1 = toDate(rangeMatch[1]);
-      const d2 = toDate(rangeMatch[2]);
-      if (d1 && d2) return { text: "", from: minDate(d1, d2), to: maxDate(d1, d2) };
-    }
-
-    // single date
-    const single = toDate(s);
-    if (single) return { text: "", from: single, to: single };
-
-    // otherwise treat as text
-    return { text: s, from: null, to: null };
-  }
-
-    function toDate(s: string): Date | null {
-    const t = Date.parse(s);
-    if (!Number.isNaN(t)) return new Date(t);
-    // try simple YYYY-MM-DD only digits/hyphens
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-      const d = new Date(s + "T00:00:00");
-      return Number.isNaN(d.getTime()) ? null : d;
-    }
-    // try MM/DD/YYYY
-    const mdY = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (mdY) {
-      const [_, m, d, y] = mdY;
-      const dt = new Date(Number(y), Number(m) - 1, Number(d));
-      return Number.isNaN(dt.getTime()) ? null : dt;
-    }
-    return null;
-  }
-
-  function minDate(a: Date, b: Date) { return a < b ? a : b; }
-  function maxDate(a: Date, b: Date) { return a > b ? a : b; }
-
-  const { textQuery, dateFrom, dateTo } = useMemo(() => {
-    const { text, from, to } = parseSearch(search);
-    return { textQuery: text, dateFrom: from, dateTo: to };
-  }, [search]);
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setErr(null);
-    try {
-      // Build backend path using status tab and text search (if any)
-      const base = active === "all" ? "/applications" : `/applications?status_eq=${encodeURIComponent(active)}`;
-      const path = textQuery
-        ? (base.includes("?") ? `${base}&q=${encodeURIComponent(textQuery)}` : `${base}?q=${encodeURIComponent(textQuery)}`)
-        : base;
-
-      const data = await apiGet<Application[]>(path);
-
-      // Client-side date filtering if a date (or range) was detected
-      const filtered = (dateFrom || dateTo)
-        ? data.filter((a) => {
-            if (!a.applied_date) return false;
-            const d = new Date(a.applied_date);
-            if (Number.isNaN(d.getTime())) return false;
-            if (dateFrom && d < stripTime(dateFrom)) return false;
-            if (dateTo && d > endOfDay(dateTo)) return false;
-            return true;
-          })
-        : data;
-
-      setApps(filtered);
-      setOverrides({}); // reset optimistic labels on new queries
+      const path = listQuery ? `/applications?${listQuery}` : "/applications"
+      const data = await apiGet<Application[]>(path)
+      setItems(data)
+      setSelected({}) // clear selection on refresh
     } catch (e: any) {
-      setErr(e.message || "Failed to load applications");
-      setApps([]);
+      setError(e?.message || "Failed to load applications")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [active, textQuery, dateFrom, dateTo]);
+  }, [listQuery])
 
-  useEffect(() => { void reload(); }, [reload]);
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
-  function stripTime(d: Date) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-  function endOfDay(d: Date) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999); }
+  // ---- CRUD ----
+  const create = useCallback(
+    async (payload: Partial<Application>) => {
+      const created = await apiPost<Application>("/applications", payload)
+      setItems((prev) => [created, ...prev])
+      return created
+    },
+    []
+  )
+
+  const update = useCallback(
+    async (id: string, patch: Partial<Application>) => {
+      const updated = await apiPatch<Application>(`/applications/${id}`, patch)
+      setItems((prev) => prev.map((a) => (a.application_id === id ? updated : a)))
+      return updated
+    },
+    []
+  )
+
+  const remove = useCallback(
+    async (id: string) => {
+      await apiDelete(`/applications/${id}`)
+      setItems((prev) => prev.filter((a) => a.application_id !== id))
+      setSelected((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    },
+    []
+  )
+
+  // ---- Status move (single) ----
+  const moveStatus = useCallback(
+    async (id: string, next: APIStatus) => {
+      const qs = new URLSearchParams({ new_status: next }).toString()
+      await apiPost(`/applications/${id}/move?${qs}`) 
+      setItems((prev) =>
+        prev.map((a) =>
+          a.application_id === id ? { ...a, status: next } : a
+        )
+      )
+    },
+    []
+  )
+
+  // ---- Bulk operations ----
+  const selectedIds = useMemo(
+    () => Object.entries(selected).filter(([, v]) => v).map(([k]) => k),
+    [selected]
+  )
+
+  const bulkMove = useCallback(
+    async (next: APIStatus) => {
+      if (!selectedIds.length) return
+      await apiPost("/applications/bulk-move", { ids: selectedIds, status: next })
+      setItems((prev) =>
+        prev.map((a) =>
+          selected[a.application_id] ? { ...a, status: next } : a
+        )
+      )
+      setSelected({})
+    },
+    [selected, selectedIds]
+  )
+
+  const bulkDelete = useCallback(async () => {
+    if (!selectedIds.length) return
+    await apiPost("/applications/bulk-delete", { ids: selectedIds })
+    setItems((prev) => prev.filter((a) => !selected[a.application_id]))
+    setSelected({})
+  }, [selected, selectedIds])
+
+  // ---- Selection helpers ----
+  const toggle = useCallback((id: string) => {
+    setSelected((prev) => ({ ...prev, [id]: !prev[id] }))
+  }, [])
+
+  const selectAll = useCallback(() => {
+    const next: Record<string, boolean> = {}
+    for (const a of items) next[a.application_id] = true
+    setSelected(next)
+  }, [items])
+
+  const clearSelection = useCallback(() => setSelected({}), [])
 
   return {
-    apps,
+    items,
     loading,
-    err,
-    reload,
+    error,
+    refresh,
+
+    // search/filter
+    q,
+    setQ,
+    setStatus,
 
     // selection
-    selectionMode,
     selected,
-    bulkBusy,
-    toggleSelectionMode,
-    toggleOne,
+    selectedIds,
+    toggle,
+    selectAll,
     clearSelection,
-    selectAllOnPage,
 
-    // bulk
-    bulkMoveStatus,
+    // operations
+    create,
+    update,
+    remove,
+    moveStatus,
+    bulkMove,
     bulkDelete,
-
-    // display
-    getDisplayedStatus,
-    setOverride,
-
-    // search
-    search,
-    setSearch
-  };
+  }
 }

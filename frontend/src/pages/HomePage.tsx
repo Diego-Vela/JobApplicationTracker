@@ -1,14 +1,16 @@
+// src/pages/HomePage.tsx
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { getToken } from "../api"; // <- from your api.ts
+import { useNavigate, Link } from "react-router-dom";
+import { getCurrentUser } from "../api"; // Cognito (Amplify) session
 
 export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (getToken()) {
-      navigate("/applications");
-    }
+    (async () => {
+      const user = await getCurrentUser(); // null if not signed in
+      if (user) navigate("/applications");
+    })();
   }, [navigate]);
 
   return (
@@ -24,20 +26,20 @@ export default function HomePage() {
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="/signup"
+          <Link
+            to="/signup"
             className="rounded-lg bg-brand px-5 py-3 text-white transition hover:brightness-95 focus:outline-none focus-visible:ring focus-visible:ring-blue-300 text-[clamp(0.95rem,1.6vw,1.0625rem)]"
             aria-label="Get started with Jobblet"
           >
             Get Started
-          </a>
-          <a
-            href="/login"
+          </Link>
+          <Link
+            to="/login"
             className="rounded-lg border border-gray-300 bg-white px-5 py-3 transition hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-gray-300 text-[clamp(0.95rem,1.6vw,1.0625rem)]"
             aria-label="Log in to Jobblet"
           >
             Log In
-          </a>
+          </Link>
         </div>
       </section>
     </main>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { STATUS_LABELS, UI_TO_API, UI_TO_COLOR } from "../statusMaps";
 import type { UIStatus } from "../types";
-import { API_URL, getToken } from "../../api";
+import { apiPost, APIError } from "../../api"; // ⬅️ use new helpers
 
 type Props = {
   appId: string;
@@ -14,6 +14,7 @@ type Props = {
 export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: Props) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -28,14 +29,14 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
   async function move(next: UIStatus) {
     if (next === value) { setOpen(false); return; }
     setBusy(true);
+    setErr(null);
     try {
       const qs = new URLSearchParams({ new_status: UI_TO_API[next] }).toString();
-      const res = await fetch(`${API_URL}/applications/${appId}/move?${qs}`, {
-        method: "POST",
-        headers: { ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
-      });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.detail || "Move failed");
+      await apiPost(`/applications/${appId}/move?${qs}`);
       onChangeSuccess?.(next);
+    } catch (e) {
+      const msg = e instanceof APIError ? e.message : "Move failed";
+      setErr(msg);
     } finally {
       setBusy(false);
       setOpen(false);
@@ -48,6 +49,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
       <span
         className={`select-none rounded-full border px-3 py-1 text-md capitalize ${UI_TO_COLOR[value]}`}
         aria-disabled="true"
+        title={err ?? undefined}
       >
         {STATUS_LABELS[value]}
       </span>
@@ -62,6 +64,7 @@ export default function StatusMenu({ appId, value, onChangeSuccess, disabled }: 
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={busy}
+        title={err ?? undefined}
       >
         {STATUS_LABELS[value]}
       </button>

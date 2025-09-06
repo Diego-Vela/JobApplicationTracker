@@ -1,32 +1,29 @@
 # app/deps.py
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-from jose import jwt, JWTError
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import os
-import json
+import os, json, urllib.request
 from functools import lru_cache
-from .models import User
-import urllib.request
+from typing import Optional
+
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import jwt, JWTError
+from sqlalchemy.orm import Session
 
 from .db import SessionLocal
+from .models import User
 
-# ---- Auth config(Unused) ----
-AUTH_MODE  = os.getenv("AUTH_MODE", "local")  # "local" | "dev-noverify" | "cognito"
+# ---- Modes ----
+AUTH_MODE  = os.getenv("AUTH_MODE", "cognito")  # "cognito" | "local" | "dev-noverify"
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
 ALGORITHM  = "HS256"
 
-# ==== Cognito config ====
+# ---- Cognito config ----
+COGNITO_REGION   = os.getenv("COGNITO_REGION")
+USER_POOL_ID     = os.getenv("USER_POOL_ID")
+APP_CLIENT_ID    = os.getenv("APP_CLIENT_ID")
+COGNITO_ISSUER   = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{USER_POOL_ID}" if COGNITO_REGION and USER_POOL_ID else None
+JWKS_URL         = f"{COGNITO_ISSUER}/.well-known/jwks.json" if COGNITO_ISSUER else None
 
-COGNITO_REGION = os.getenv("COGNITO_REGION")
-USER_POOL_ID = os.getenv("USER_POOL_ID")
-APP_CLIENT_ID = os.getenv("APP_CLIENT_ID")
-
-COGNITO_ISSUER = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{USER_POOL_ID}"
-JWKS_URL = f"{COGNITO_ISSUER}/.well-known/jwks.json"
-
-# Use simple HTTP Bearer (works now and with Cognito later)
-bearer = HTTPBearer(auto_error=False)
+security = HTTPBearer()  # 401 automatically if missing
 
 # ---- DB dependency ----
 def get_db():
@@ -36,7 +33,7 @@ def get_db():
     finally:
         db.close()
 
-# ---- Token decoding (local JWT mode - Unused) ----
+# ---- Local JWT (only for AUTH_MODE="local") ----
 def _decode_local_jwt(token: str) -> str:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -44,70 +41,125 @@ def _decode_local_jwt(token: str) -> str:
         if not sub:
             raise HTTPException(status_code=401, detail="Invalid token: no sub")
         return sub
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-# ---- Old user dependency ----
-def get_current_user(
-    creds: HTTPAuthorizationCredentials = Depends(bearer),
-) -> str:
-    if not creds:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    token = creds.credentials
-
-    if AUTH_MODE == "dev-noverify":
-        # For quick local tests: token == user_id
-        return token
-
-    # Default: verify locally-signed JWT (swap to Cognito verifier later)
-    return _decode_local_jwt(token)
-
-# ==== Cognito helpers ====
-
-security = HTTPBearer()
-
-@lru_cache
-def get_jwks():
-    with urllib.request.urlopen(JWKS_URL) as f:
-        return json.load(f)
-
-def bearer_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
-    """Extracts JWT from Authorization header."""
-    return credentials.credentials
-
-def verify_cognito_jwt(token: str) -> dict:
-    """Verify a Cognito JWT and return claims."""
-    jwks = get_jwks()
-    try:
-        # jose handles key lookup internally if you pass JWKS
-        claims = jwt.decode(
-            token,
-            jwks,
-            algorithms=["RS256"],
-            audience=APP_CLIENT_ID,
-            issuer=COGNITO_ISSUER,
-        )
-        return claims
     except JWTError as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
 
-# ==== Cognito user dependency ====
+# ---- JWKS helpers ----
+@lru_cache
+def _get_jwks() -> dict:
+    with urllib.request.urlopen(JWKS_URL, timeout=5) as f:
+        return json.load(f)
 
-def get_current_user_id(db: Session = Depends(get_db), token: str = Depends(bearer_token)) -> User:
-    """Require a valid Cognito user with verified email."""
-    claims = verify_cognito_jwt(token)
+def _verify_cognito(token: str) -> dict:
+    if not (COGNITO_REGION and USER_POOL_ID and APP_CLIENT_ID):
+        raise HTTPException(status_code=500, detail="Cognito ENV not configured")
+    if not JWKS_URL:
+        raise HTTPException(status_code=500, detail="Cognito issuer not derived")
+
+    def decode_with_jwks(jwks: dict, *, audience: str | None, verify_aud: bool) -> dict:
+        options = None if verify_aud else {"verify_aud": False}
+        return jwt.decode(
+            token,
+            jwks,
+            algorithms=["RS256"],
+            issuer=COGNITO_ISSUER,
+            audience=audience,
+            options=options,
+        )
+
+    # Peek at unverified claims to decide which checks to apply
+    try:
+        unverified = jwt.get_unverified_claims(token)
+        token_use = unverified.get("token_use")
+    except Exception:
+        # If we can't parse claims, fall back to full decode (will raise)
+        token_use = None
+
+    # First attempt with current JWKS
+    try:
+        jwks = _get_jwks()
+
+        if token_use == "id":
+            # ID token: validate audience against APP_CLIENT_ID
+            claims = decode_with_jwks(jwks, audience=APP_CLIENT_ID, verify_aud=True)
+            if not claims.get("email_verified"):
+                raise HTTPException(status_code=403, detail="Email not verified")
+            return claims
+
+        elif token_use == "access":
+            # Access token: no audience; validate client_id manually
+            claims = decode_with_jwks(jwks, audience=None, verify_aud=False)
+            if claims.get("client_id") != APP_CLIENT_ID:
+                raise JWTError("Invalid client_id for access token")
+            return claims
+
+        else:
+            # Unknown or missing token_use – try strict ID-token path; if it fails, raise
+            claims = decode_with_jwks(jwks, audience=APP_CLIENT_ID, verify_aud=True)
+            if claims.get("token_use") != "id":
+                raise JWTError("Unsupported token_use")
+            if not claims.get("email_verified"):
+                raise HTTPException(status_code=403, detail="Email not verified")
+            return claims
+
+    except JWTError:
+        # Keys may have rotated: refresh JWKS once and retry
+        _get_jwks.cache_clear()
+        jwks = _get_jwks()
+
+        if token_use == "id":
+            claims = decode_with_jwks(jwks, audience=APP_CLIENT_ID, verify_aud=True)
+            if not claims.get("email_verified"):
+                raise HTTPException(status_code=403, detail="Email not verified")
+            return claims
+        elif token_use == "access":
+            claims = decode_with_jwks(jwks, audience=None, verify_aud=False)
+            if claims.get("client_id") != APP_CLIENT_ID:
+                raise JWTError("Invalid client_id for access token")
+            return claims
+        else:
+            claims = decode_with_jwks(jwks, audience=APP_CLIENT_ID, verify_aud=True)
+            if claims.get("token_use") != "id":
+                raise JWTError("Unsupported token_use")
+            if not claims.get("email_verified"):
+                raise HTTPException(status_code=403, detail="Email not verified")
+            return claims
+        
+# ---- Unified current user dependency ----
+def get_current_user_id(
+    db: Session = Depends(get_db),
+    creds: HTTPAuthorizationCredentials = Depends(security),
+) -> User:
+    token = creds.credentials
+
+    if AUTH_MODE == "dev-noverify":
+        # token == user_id (dev only)
+        user = db.query(User).filter(User.user_id == token).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Unknown dev user_id")
+        return user
+
+    if AUTH_MODE == "local":
+        sub = _decode_local_jwt(token)
+        user = db.query(User).filter(User.cognito_sub == sub).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found (local mode)")
+        return user
+
+    # Default: Cognito
+    claims = _verify_cognito(token)
 
     if not claims.get("email_verified"):
         raise HTTPException(status_code=403, detail="Email not verified")
 
     sub = claims["sub"]
-    email = claims.get("email")
+    email: Optional[str] = claims.get("email")
+    email = email.lower() if isinstance(email, str) else None
 
     user = db.query(User).filter(User.cognito_sub == sub).first()
-
     if not user:
-        # Lazy provision user in your DB
-        user = User(cognito_sub=sub, email=email)
+        # Lazy provision
+        user = User(cognito_sub=sub, email=email or "")
         db.add(user)
         db.commit()
         db.refresh(user)

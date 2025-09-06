@@ -1,7 +1,9 @@
+// src/pages/SignupPage.tsx
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { register } from "../api"; 
 
-type FieldErrors = Partial<Record<"email"|"password"|"confirm", string>>;
+type FieldErrors = Partial<Record<"email" | "password" | "confirm", string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -31,41 +33,33 @@ export default function SignupPage() {
     setErr(null);
     if (!validate()) return;
 
-    // cancel any in-flight request before starting a new one
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
 
     setLoading(true);
     try {
-      console.log("Sending signup request...");
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // credentials: "include", // enable if backend sets cookie on signup
-        body: JSON.stringify({ email, password }),
-        signal: ac.signal,
-      });
-
-      if (!res.ok) {
-        let detail = "Sign up failed";
-        try {
-          const body = await res.json();
-          // surface common messages like 409 conflict
-          detail = body?.detail || detail;
-        } catch { /* ignore parse error */ }
-        throw new Error(detail);
-      }
-
-      // success — go to login and prefill email
-      navigate("/login", { state: { emailPrefill: email } });
+      await register(email, password); // <-- Cognito sign-up (sends verification email)
+      navigate("/verify-email", { state: { emailPrefill: email } });
     } catch (e: any) {
-      if (e.name === "AbortError") return;
-      setErr(e.message || "Sign up failed");
+      const code = e?.name || e?.code;
+      if (code === "UsernameExistsException") {
+        setErr("An account with this email already exists. Try logging in.");
+      } else if (code === "InvalidPasswordException") {
+        setErr(
+          e?.message ||
+            "Password does not meet requirements (min length, mixed characters)."
+        );
+      } else if (typeof e?.message === "string") {
+        setErr(e.message);
+      } else {
+        setErr("Sign up failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   }
+
 
   useEffect(() => {
     return () => abortRef.current?.abort(); // cleanup on unmount
@@ -77,6 +71,13 @@ export default function SignupPage() {
         <h1 className="mb-6 text-center text-2xl font-bold">
           Create your <span className="text-brand">Jobblet</span> account
         </h1>
+
+        {/* Verification notice banner */}
+        <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          After signing up, you’ll receive an email with a verification code.
+          Please check your inbox (and spam folder) and enter that code on the
+          verification page before logging in.
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
