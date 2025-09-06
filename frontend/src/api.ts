@@ -3,7 +3,10 @@ import { Amplify } from 'aws-amplify'
 import {
   signUp, confirmSignUp, resendSignUpCode,
   signIn, signOut, fetchAuthSession, getCurrentUser as amplifyGetCurrentUser,
+  resetPassword, confirmResetPassword, updatePassword
+  
 } from 'aws-amplify/auth'
+
 
 const {
   VITE_API_URL,
@@ -131,4 +134,20 @@ function toQuery(obj: Record<string, any>) {
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join('&')
   return s ? `?${s}` : ''
+}
+
+// Forgot password flow
+// --- Password reset (v6 names) ---
+export async function requestPasswordReset(email: string) {
+  // Triggers code delivery to email/SMS
+  return resetPassword({ username: email });
+}
+export async function confirmPasswordReset(email: string, code: string, newPassword: string) {
+  // Confirms with the verification code + sets new password
+  return confirmResetPassword({ username: email, confirmationCode: code, newPassword });
+}
+
+// --- Change password when logged in ---
+export async function changePassword(oldPassword: string, newPassword: string) {
+  return updatePassword({ oldPassword, newPassword });
 }

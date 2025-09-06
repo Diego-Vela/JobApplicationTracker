@@ -11,3 +11,4 @@ export { default as VerifyEmailPage } from "./pages/VerifyEmailPage";
 export { default as PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 export { default as TermsOfServicePage } from "./pages/TermsOfServicePage";
 export { default as NotFoundPage } from "./pages/NotFoundPage";
+export { default as ForgotPasswordPage } from "./pages/ForgotPasswordPage";

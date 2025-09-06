@@ -4,7 +4,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { 
   RootLayout, HomePage, LoginPage, SignupPage, ApplicationsPage, 
   ApplicationInfoPage, ApplicationNewPage, DocumentsPage, 
-  AboutPage, VerifyEmailPage, PrivacyPolicyPage, TermsOfServicePage, NotFoundPage
+  AboutPage, VerifyEmailPage, PrivacyPolicyPage, TermsOfServicePage,
+  ForgotPasswordPage, NotFoundPage
 } from "./index";
 import "./index.css";
 
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
       { path: "verify-email", element: <VerifyEmailPage /> }, // /verify-email
       { path: "privacy", element: <PrivacyPolicyPage /> }, // /privacy-policy
       { path: "terms", element: <TermsOfServicePage /> }, // /terms-of-service
+      { path: "forgot-password", element: <ForgotPasswordPage /> }, // /forgot-password
       { path: "*", element: <NotFoundPage /> }, // /404
     ],
   },

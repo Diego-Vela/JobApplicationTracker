@@ -15,14 +15,14 @@ export default function Footer() {
           <a href="/terms" className="hover:underline">
             Terms of Service
           </a>
-          <a href="/contact" className="hover:underline">
+          <a href="/about" className="hover:underline">
             Contact
           </a>
         </div>
 
         {/* Maker credit */}
         <div className="mt-4 text-gray-500">
-          Built with ❤️ by <span className="font-semibold">DV</span>
+          Built with ❤️ by <span className="font-semibold">DiVe</span>
         </div>
       </div>
     </footer>
