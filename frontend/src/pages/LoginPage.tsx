@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { login, resendVerification } from "../api"; // <-- from your new api.ts
+import { apiGet, APIError, login, resendVerification } from "../api";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -26,11 +26,21 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Cognito sign-in via Amplify; tokens are stored by the library
       await login(email, password);
 
-      // If sign-in succeeds, just go to apps.
-      navigate("/applications");
+      // NEW: handshake — block app access unless backend confirms account exists
+      try {
+        await apiGet("/auth/me");
+        navigate("/applications");
+      } catch (e) {
+        if (e instanceof APIError && e.status === 403) {
+          // Treat as “needs verification” to match your existing UX
+          setNeedsVerification(true);
+          setErr("Please verify your email to continue.");
+          return; // don't navigate
+        }
+        throw e;
+      }
     } catch (e: any) {
       // Common Amplify/Cognito errors:
       //  - "UserNotConfirmedException": user must verify email
@@ -41,10 +51,11 @@ export default function LoginPage() {
       if (name === "UserNotConfirmedException") {
         setNeedsVerification(true);
         setErr("Please verify your email to continue.");
-      } else if (name === "NotAuthorizedException") {
-        setErr("Incorrect email or password.");
+
       } else if (name === "UserNotFoundException") {
         setErr("No account found with that email.");
+      } else if (name === "NotAuthorizedException") {
+        setErr("Incorrect email or password."); 
       } else if (typeof e?.message === "string") {
         setErr(e.message);
       } else {
@@ -129,14 +140,7 @@ export default function LoginPage() {
                 Your email isn’t verified yet. Enter the code sent to your inbox on the verification page,
                 or resend the email below.
               </p>
-              <div className="flex gap-2">
-                <Link
-                  to="/verify-email"
-                  state={{ emailPrefill: email }}
-                  className="rounded-md bg-amber-600 px-3 py-1.5 text-white hover:brightness-110"
-                >
-                  Go to Verify
-                </Link>
+              <div className="flex gap-2 justify-center">
                 <button
                   type="button"
                   onClick={handleResend}

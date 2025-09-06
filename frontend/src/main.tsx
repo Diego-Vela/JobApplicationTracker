@@ -1,8 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { RootLayout, HomePage, LoginPage, SignupPage, ApplicationsPage, ApplicationInfoPage, ApplicationNewPage, DocumentsPage, AboutPage } from "./index";
-
+import { 
+  RootLayout, HomePage, LoginPage, SignupPage, ApplicationsPage, 
+  ApplicationInfoPage, ApplicationNewPage, DocumentsPage, 
+  AboutPage, VerifyEmailPage 
+} from "./index";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -18,6 +21,7 @@ const router = createBrowserRouter([
       { path: "applications/:id", element: <ApplicationInfoPage /> }, // /applications/:id
       { path: "documents", element: <DocumentsPage /> }, // /documents
       { path: "about", element: <AboutPage /> }, // /about
+      { path: "verify-email", element: <VerifyEmailPage /> }, // /verify-email
     ],
   },
 ]);

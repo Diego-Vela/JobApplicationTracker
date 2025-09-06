@@ -7,3 +7,4 @@ export { default as HomePage } from "./pages/HomePage";
 export { default as LoginPage } from "./pages/LoginPage";
 export { default as SignupPage } from "./pages/SignupPage";
 export { default as AboutPage } from "./pages/AboutPage";
+export { default as VerifyEmailPage } from "./pages/VerifyEmailPage";
