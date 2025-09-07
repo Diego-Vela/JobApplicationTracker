@@ -3,12 +3,14 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import auth, users, files, applications, notes
 from .db import Base, engine
-import os
+from mangum import Mangum
 from .deps import get_current_user_id
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Job Application Tracker API")
+
+handler = Mangum(app)
 
 def set_user_state(request: Request, user = Depends(get_current_user_id)):
     request.state.user_id = user.user_id
