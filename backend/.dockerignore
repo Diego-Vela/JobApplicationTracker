@@ -1,0 +1,34 @@
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+.venv/
+env/
+venv/
+
+# Ignore environment files
+.env
+
+# Ignore logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Ignore git and node modules
+.git/
+node_modules/
+
+# Ignore frontend and test folders
+frontend/
+tests/
+test/
+coverage/
+
+# Ignore documentation and config files not needed in image
+README.md
+.dockerignore
+dockerfile
+Dockerfile

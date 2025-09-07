@@ -16,8 +16,8 @@ router = APIRouter(prefix="/files", tags=["files"])
 
 # -------------------- Config --------------------
 S3_BUCKET   = os.getenv("AWS_S3_BUCKET", "jobblet-documents")
-S3_REGION   = os.getenv("AWS_REGION", "us-west-1")
-CDN_DOMAIN  = os.getenv("AWS_CLOUDFRONT_DOMAIN")  # dxxx.cloudfront.net (optional)
+S3_REGION   = os.getenv("S3_REGION", "us-west-1")
+CDN_DOMAIN  = os.getenv("S3_CLOUDFRONT_DOMAIN")  # dxxx.cloudfront.net (optional)
 MAX_SIZE    = 10 * 1024 * 1024  # 10 MB hard cap
 ALLOWED_CT  = {
     "application/pdf",
