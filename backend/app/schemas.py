@@ -45,6 +45,7 @@ class ApplicationCreate(BaseModel):
     company: str
     job_title: Optional[str] = None
     job_description: Optional[str] = None
+    job_website: Optional[str] = None
     status: Optional[str] = "applied"
     applied_date: Optional[date] = None
     resume_id: Optional[str] = None
@@ -54,6 +55,7 @@ class ApplicationUpdate(BaseModel):
     company: Optional[str] = None
     job_title: Optional[str] = None
     job_description: Optional[str] = None
+    job_website: Optional[str] = None
     status: Optional[str] = None
     applied_date: Optional[date] = None
     resume_id: Optional[str] = None
@@ -64,6 +66,7 @@ class ApplicationOut(BaseModel):
     company: str
     job_title: Optional[str]
     job_description: Optional[str]
+    job_website: Optional[str]
     status: str
     applied_date: Optional[date]
     created_at: datetime

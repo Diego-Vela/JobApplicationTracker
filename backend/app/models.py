@@ -13,7 +13,6 @@ class User(Base):
     __tablename__ = "users"
     user_id   = Column(UUID(as_uuid=False), primary_key=True, default=uuid_pk)
     email     = Column(Text, unique=True, nullable=False)
-    password_hash = Column(Text, nullable=True)
     premium   = Column(Boolean, default=False)
     created_at= Column(DateTime(timezone=True), server_default=func.now())
     cognito_sub = Column(Text, unique=True, nullable=True)
@@ -61,6 +60,7 @@ class Application(Base):
     company       = Column(Text, nullable=False)
     job_title     = Column(Text)
     job_description = Column(Text)
+    job_website   = Column(Text)
     status        = Column(Text, default="applied")
     applied_date  = Column(Date)
     created_at    = Column(DateTime(timezone=True), server_default=func.now())

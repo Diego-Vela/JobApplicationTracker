@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth, files, applications, notes
 from app.db import Base, engine
 from mangum import Mangum
-from app.deps import get_current_user_id
+from app.deps import get_current_user_id, get_db
+from sqlalchemy import text
 
 Base.metadata.create_all(bind=engine)
 
@@ -39,3 +40,7 @@ app.include_router(
     files.router,
     dependencies=[Depends(set_user_state)]
 )
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
