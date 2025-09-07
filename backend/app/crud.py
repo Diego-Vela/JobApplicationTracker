@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from backend import models, schemas
 from fastapi import HTTPException
+from app import models, schemas
 
 # ----- Users -----
 # Gets the Information for a user by their email

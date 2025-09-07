@@ -1,8 +1,8 @@
 # app/routers/files.py
 from fastapi import APIRouter, HTTPException, status, Query, Request, Depends
 from sqlalchemy.orm import Session
-from ..deps import get_db  # keep DB dependency only
-from .. import models, schemas
+from app.deps import get_db  # keep DB dependency only
+from app import schemas, models
 from botocore.config import Config
 from urllib.parse import urlparse
 from urllib.parse import quote as urlquote

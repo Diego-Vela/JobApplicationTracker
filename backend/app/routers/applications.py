@@ -1,11 +1,10 @@
 # app/routers/applications.py
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from sqlalchemy import asc, desc, or_
-from typing import Optional, Literal
+from typing import Literal
 
-from ..deps import get_db, get_current_user_id
-from .. import models, schemas
+from app import models, schemas
+from app.deps import get_db, get_current_user_id
 
 def clamp(value, min_value, max_value):
     return max(min_value, min(value, max_value))

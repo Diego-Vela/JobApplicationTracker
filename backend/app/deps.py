@@ -8,8 +8,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 
-from .db import SessionLocal
-from .models import User
+from app.db import SessionLocal
+from app.models import User
 
 # ---- Modes ----
 AUTH_MODE  = os.getenv("AUTH_MODE", "cognito")  # "cognito" | "local" | "dev-noverify"

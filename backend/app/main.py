@@ -1,10 +1,10 @@
 # app/main.py
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, users, files, applications, notes
-from .db import Base, engine
+from app.routers import auth, files, applications, notes
+from app.db import Base, engine
 from mangum import Mangum
-from .deps import get_current_user_id
+from app.deps import get_current_user_id
 
 Base.metadata.create_all(bind=engine)
 

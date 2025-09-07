@@ -1,10 +1,10 @@
-# backend/models.py
+# /models.py
 import uuid
-from sqlalchemy import Column, String, Boolean, Text, DateTime, ForeignKey, Date
+from sqlalchemy import Column, Boolean, Text, DateTime, ForeignKey, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from .db import Base
+from app.db import Base
 
 def uuid_pk():
     return str(uuid.uuid4())

@@ -1,15 +1,8 @@
-# Dockerfile
+# Dockerfile (inside backend/)
 FROM public.ecr.aws/lambda/python:3.12
-
-# Work dir inside Lambda image
 WORKDIR /var/task
-
-# Install deps
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-
-# Copy app code
-COPY . .
-
-# The handler object is main.handler
-CMD ["main.handler"]
+COPY app app
+ENV PYTHONPATH=/var/task
+CMD ["app.main.handler"]  
