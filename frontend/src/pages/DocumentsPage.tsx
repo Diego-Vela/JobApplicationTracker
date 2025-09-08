@@ -102,7 +102,7 @@ export default function DocumentsPage() {
 
 function EmptyState({ kind }: { kind: DocType }) {
   return (
-    <div className="col-span-full rounded-2xl border p-8 text-center text-sm text-muted-foreground">
+    <div className="col-span-full rounded-2xl border p-8 text-center text-md text-muted-foreground">
       No {kind === "resume" ? "resumes" : "CVs"} yet. Use the uploader above to add your first file.
     </div>
   );

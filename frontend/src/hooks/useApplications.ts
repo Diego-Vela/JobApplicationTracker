@@ -26,6 +26,9 @@ export function useApplications(initial: FetchParams = {}) {
     return s.toString()
   }, [q, status])
 
+  // Only call API on first mount or manual refresh
+  const [initialized, setInitialized] = useState(false);
+
   const refresh = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -38,12 +41,16 @@ export function useApplications(initial: FetchParams = {}) {
       setError(e?.message || "Failed to load applications")
     } finally {
       setLoading(false)
+      setInitialized(true)
     }
   }, [listQuery])
 
   useEffect(() => {
-    refresh()
-  }, [refresh])
+    if (!initialized) {
+      refresh()
+    }
+    // eslint-disable-next-line
+  }, [])
 
   // ---- CRUD ----
   const create = useCallback(
