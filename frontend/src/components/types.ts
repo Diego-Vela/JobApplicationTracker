@@ -38,7 +38,7 @@ export type CreatePayload = {
 export const MAX_NUM_NOTES = 10;
 export const MAX_LABEL_LENGTH = 35;
 export const MAX_NOTES_LENGTH = 500;
-export const MAX_DESCRIPTION_LENGTH = 5000;
+export const MAX_DESCRIPTION_LENGTH = 10000;
 export const MAX_TOTAL_APPLICATIONS = 500;
 
 // ---------------------------------- Document-related types ---------------------------------- //
