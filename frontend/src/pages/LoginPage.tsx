@@ -28,34 +28,41 @@ export default function LoginPage() {
     try {
       await login(email, password);
 
-      // NEW: handshake — block app access unless backend confirms account exists
+      // Check backend user exists
       try {
         await apiGet("/auth/me");
-        navigate("/applications");
       } catch (e) {
         if (e instanceof APIError && e.status === 403) {
-          // Treat as “needs verification” to match your existing UX
           setNeedsVerification(true);
           setErr("Please verify your email to continue.");
-          return; // don't navigate
+          return;
         }
         throw e;
       }
-    } catch (e: any) {
-      // Common Amplify/Cognito errors:
-      //  - "UserNotConfirmedException": user must verify email
-      //  - "NotAuthorizedException": bad credentials
-      //  - "UserNotFoundException": no such user
-      const name = e?.name || e?.code;
 
+      // Check database health
+      try {
+        const health = await apiGet<{ status: string }>("/health");
+        if (health.status !== "ok") {
+          setErr("Database connection error. Please try again later.");
+          return;
+        }
+      } catch {
+        setErr("Database connection error. Please try again later.");
+        return;
+      }
+
+      // All checks passed, navigate to applications
+      navigate("/applications");
+    } catch (e: any) {
+      const name = e?.name || e?.code;
       if (name === "UserNotConfirmedException") {
         setNeedsVerification(true);
         setErr("Please verify your email to continue.");
-
       } else if (name === "UserNotFoundException") {
         setErr("No account found with that email.");
       } else if (name === "NotAuthorizedException") {
-        setErr("Incorrect email or password."); 
+        setErr("Incorrect email or password.");
       } else if (typeof e?.message === "string") {
         setErr(e.message);
       } else {
