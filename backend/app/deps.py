@@ -47,7 +47,7 @@ def _decode_local_jwt(token: str) -> str:
 # ---- JWKS helpers ----
 @lru_cache
 def _get_jwks() -> dict:
-    with urllib.request.urlopen(JWKS_URL, timeout=5) as f:
+    with urllib.request.urlopen(JWKS_URL, timeout=300) as f:
         return json.load(f)
 
 def _verify_cognito(token: str) -> dict:
