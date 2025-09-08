@@ -11,7 +11,8 @@ import {
 } from "../components/applications-page";
 
 import { useApplications } from "../hooks/useApplications";
-import type { TabKey, UIStatus } from "../components/types";
+import type { TabKey, UIStatus, Application} from "../components/types";
+import { UI_TO_API } from "../components/statusMaps";
 import { MAX_TOTAL_APPLICATIONS } from "../components/types";
 
 export default function ApplicationsPage() {
@@ -45,6 +46,7 @@ export default function ApplicationsPage() {
 
   const [selectionMode, setSelectionMode] = useState(false);
   const toggleSelectionMode = useCallback(() => setSelectionMode((v) => !v), []);
+  
 
   const selectedSet = useMemo(() => {
     const ids = Object.entries(selected).filter(([, v]) => v).map(([k]) => k);
@@ -69,6 +71,12 @@ export default function ApplicationsPage() {
   const setSearch = setQ;
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const filtered = useMemo(() => {
+    const list = items ?? [];
+    if (active === "all") return list;
+    return list.filter((a: Application) => (a.status ?? "applied") === UI_TO_API[active]);
+  }, [items, active]);
 
   useEffect(() => {
     if (!loadMore || !hasMore) return;
@@ -119,7 +127,7 @@ export default function ApplicationsPage() {
         value={active}
         onChange={(t) => {
           setActive(t);
-          setStatus(t === "all" ? "all" : (t as any));
+          setStatus(UI_TO_API[t as UIStatus] ?? "all");
         }}
       />
 
@@ -129,26 +137,23 @@ export default function ApplicationsPage() {
 
       {error && !loading && <ErrorMessage text={error} />}
 
-      {!loading && !error && items && items.length === 0 && (
+      {!loading && !error && filtered.length === 0 && (
         <EmptyState label={active === "all" ? "All" : active} showCta={active === "all"} />
       )}
 
-      {!loading && !error && items && items.length > 0 && (
+      {!loading && !error && filtered.length > 0 && (
         <>
           <ApplicationList
-            apps={items}
+            apps={filtered}
             getDisplayedStatus={(a) => ((a.status ?? "applied") as UIStatus)}
-            // selection mode + bulk edit
             selectionMode={selectionMode}
             selected={selectedSet}
             onToggleSelected={(id: string) => toggle(id)}
-            // per-card status change
             onStatusChanged={(id, next) => {
               setOverride(id, next);
             }}
           />
 
-          {/* Infinite scroll sentinel + footer indicators (non-invasive) */}
           <div ref={sentinelRef} aria-hidden className="h-1" />
 
           {loadingMore && (

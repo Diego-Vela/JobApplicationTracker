@@ -140,6 +140,7 @@ export function useApplications(initial: FetchParams = {}) {
     // search/filter
     q,
     setQ,
+    status,
     setStatus,
 
     // selection
