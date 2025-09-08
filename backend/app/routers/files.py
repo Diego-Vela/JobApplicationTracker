@@ -98,7 +98,6 @@ def verify_s3_object(url: str, max_size: int = MAX_SIZE):
     key = key_from_url(url)
     try:
         head = s3.head_object(Bucket=S3_BUCKET, Key=key)
-        print("boto success")
         size = int(head.get("ContentLength", 0))
         ct = (head.get("ContentType") or "").lower()
 

@@ -85,13 +85,13 @@ export function useDocs(kind: DocType) {
   const canUpload = items.length < maximumUpload
 
   const uploadMeta = async (fileUrl: string, fileName: string, label?: string) => {
-    console.log("Uploading metadata", { fileUrl, fileName, label });
+    //console.log("Uploading metadata", { fileUrl, fileName, label });
     const created = await apiPost<ResumeOut | CVOut>(listPath, {
       url: fileUrl,
       file_name: fileName,
       label,
     })
-    console.log("Created metadata");
+    //console.log("Created metadata");
     const mapped: DocumentItem = {
       id: kind === "resume" ? (created as ResumeOut).resume_id : (created as CVOut).cv_id,
       name: created.file_name,
@@ -101,7 +101,7 @@ export function useDocs(kind: DocType) {
       type: kind,
     }
     setItems((prev) => [mapped, ...prev])
-    console.log("Set items");
+    //console.log("Set items");
   }
 
   return { items, loading, error, uploading, setUploading, refresh, remove, canUpload, uploadMeta, maximumUpload }
