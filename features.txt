@@ -1,0 +1,49 @@
+===== Features ===== 
+users can login |DONE|
+users can sign up |DONE|
+users can create an application |DONE|
+users can delete an application |DONE|
+users can filter an application based on status |DONE|
+users can select many applications to change status/delete. |DONE|
+users can search applications |DONE|
+users can move the applications' status |DONE|
+users can add personal notes to applications |DONE|
+users can upload resumes |DONE|
+users can upload cover letters |DONE|
+users can view/download the uploaded resumes/cover letters |DONE|
+users can attach a resume to their application |DONE|
+users can attach a cover letter to their application |DONE|
+users can download their resume and cover letter attached to their applications |DONE|
+users can view their resume and cover letter attached to their applications |DONE|
+users can create an application with a saved cover letter, resume |DONE|
+
+users can delete their account |IDLE|
+
+===== Additional Features =====
+users must verify their email address before their account is valid |DONE|
+users must use a password with at least 8 characters and at least 1 special character. |DONE|
+users can see the privacy policy, terms of service, and contact information |DONE|
+users cannot perform SQL Injections |DONE|
+users can reset their passwords |DONE|
+users can reset their passwords if they forgot |DONE|
+users will only load a maximum of x applications and more will load as the user scrolls |DONE|
+users can upload a resume/cover letter by dropping in the file. |DONE|
+
+===== Stretch Goals =====
+users can view their application analytics |IDLE|
+	users can view how many new applications were created this month |IDLE|
+	users can view how many new applications were rejected this month |IDLE|
+	users can view how many new applications are in progress this month(applied, interviewing) |IDLE|
+	users can view how many applications led to an offer this month |IDLE|
+	users can view these statistics of previous months. |IDLE|
+users can favorite applications |IDLE|
+
+users can switch theme to dark mode |IDLE|
+
+users can view all applications linked to a particular resume/cv by clicking on it |IDLE|
+
+users will get a cleaned url for uploads(CloudFront SetUp) |IDLE|
+
+users have a profile |IDLE|
+
+

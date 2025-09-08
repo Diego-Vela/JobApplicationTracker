@@ -1,0 +1,47 @@
+CREATE TABLE users (
+    user_id UUID PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    premium BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    cognito_sub TEXT UNIQUE
+);
+
+CREATE TABLE resumes (
+    resume_id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    resume_url TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    label TEXT,
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE cv (
+    cv_id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    cv_url TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    label TEXT,
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE application (
+    application_id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    resume_id UUID REFERENCES resumes(resume_id) ON DELETE SET NULL,
+    cv_id UUID REFERENCES cv(cv_id) ON DELETE SET NULL,
+    company TEXT NOT NULL,
+    job_title TEXT,
+    job_description TEXT,
+    job_website TEXT,
+    status TEXT DEFAULT 'applied',
+    applied_date DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE application_notes (
+    note_id UUID PRIMARY KEY,
+    application_id UUID NOT NULL REFERENCES application(application_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
