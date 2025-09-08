@@ -6,7 +6,7 @@ import { apiGet, apiPost, apiDelete } from "../api" // ⬅️ use new helpers
 
 /** Upload a file to S3 using a presigned POST from backend */
 export async function uploadToStorage(file: File): Promise<{ url: string }> {
-  // Step 1: get presigned POST (backend expects filename/content_type as query)
+  //console.log("Requesting presign");
   const q = new URLSearchParams({ filename: file.name, content_type: file.type })
   const { url, fields, file_url, max_size } = await apiPost<{
     url: string
@@ -14,7 +14,7 @@ export async function uploadToStorage(file: File): Promise<{ url: string }> {
     file_url: string
     max_size: number
   }>(`/files/presign?${q.toString()}`)
-
+  //console.log("Got the presign");
   if (file.size > max_size) throw new Error("Max file size is 10 MB.")
 
   // Step 2: upload directly to S3
@@ -23,6 +23,7 @@ export async function uploadToStorage(file: File): Promise<{ url: string }> {
   form.append("file", file)
 
   const s3Res = await fetch(url, { method: "POST", body: form })
+  //console.log("got the s3 response", s3Res);
   if (!s3Res.ok) throw new Error("Failed to upload to S3")
 
   return { url: file_url }
@@ -84,11 +85,13 @@ export function useDocs(kind: DocType) {
   const canUpload = items.length < maximumUpload
 
   const uploadMeta = async (fileUrl: string, fileName: string, label?: string) => {
+    console.log("Uploading metadata", { fileUrl, fileName, label });
     const created = await apiPost<ResumeOut | CVOut>(listPath, {
       url: fileUrl,
       file_name: fileName,
       label,
     })
+    console.log("Created metadata");
     const mapped: DocumentItem = {
       id: kind === "resume" ? (created as ResumeOut).resume_id : (created as CVOut).cv_id,
       name: created.file_name,
@@ -98,6 +101,7 @@ export function useDocs(kind: DocType) {
       type: kind,
     }
     setItems((prev) => [mapped, ...prev])
+    console.log("Set items");
   }
 
   return { items, loading, error, uploading, setUploading, refresh, remove, canUpload, uploadMeta, maximumUpload }

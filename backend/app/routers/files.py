@@ -15,8 +15,8 @@ import os, re, uuid, mimetypes, boto3, requests
 router = APIRouter(prefix="/files", tags=["files"])
 
 # -------------------- Config --------------------
-S3_BUCKET   = os.getenv("AWS_S3_BUCKET", "jobblet-documents")
-S3_REGION   = os.getenv("S3_REGION", "us-west-1")
+S3_BUCKET   = os.getenv("S3_BUCKET_NAME")
+S3_REGION   = os.getenv("S3_REGION")
 CDN_DOMAIN  = os.getenv("S3_CLOUDFRONT_DOMAIN")  # dxxx.cloudfront.net (optional)
 MAX_SIZE    = 10 * 1024 * 1024  # 10 MB hard cap
 ALLOWED_CT  = {
@@ -98,6 +98,7 @@ def verify_s3_object(url: str, max_size: int = MAX_SIZE):
     key = key_from_url(url)
     try:
         head = s3.head_object(Bucket=S3_BUCKET, Key=key)
+        print("boto success")
         size = int(head.get("ContentLength", 0))
         ct = (head.get("ContentType") or "").lower()
 
@@ -249,8 +250,9 @@ def create_resume(
     db: Session = Depends(get_db),
 ):
     user_id = _require_user_id(request)
-
-    verify_s3_object(meta.url)  # <- verification
+    print("User ID:", user_id)
+    verify_s3_object(meta.url)
+    print("S3 object verified:", meta.url) 
     rec = models.Resume(user_id=user_id, resume_url=meta.url, file_name=meta.file_name, label=meta.label)
     db.add(rec); db.commit(); db.refresh(rec)
     return schemas.ResumeOut(
@@ -338,7 +340,7 @@ def create_cv(
 ):
     user_id = _require_user_id(request)
 
-    verify_s3_object(meta.url)  # <- NEW verification
+    verify_s3_object(meta.url)  # 
     rec = models.CV(user_id=user_id, cv_url=meta.url, file_name=meta.file_name, label=meta.label)
     db.add(rec); db.commit(); db.refresh(rec)
     return schemas.CVOut(
