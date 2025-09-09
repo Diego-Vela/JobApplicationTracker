@@ -13,7 +13,7 @@ export default function SearchBar({
   value,
   onChange,
   onSubmit,
-  placeholder = "Search by company or title (e.g., Google or Software Engineer...)",
+  placeholder = "Search by company, title, or date (e.g., Google, engineer, 2023-08-01)",
   debounceMs = 300,
 }: Props) {
   const [local, setLocal] = useState(value);

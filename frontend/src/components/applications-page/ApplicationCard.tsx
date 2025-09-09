@@ -13,6 +13,7 @@ type Props = {
   selectionMode?: boolean;
   selected?: boolean;
   onToggleSelected?: (id: string) => void;
+  fmtDate: (iso?: string | null) => string;
 };
 
 export default function ApplicationCard({
@@ -23,6 +24,7 @@ export default function ApplicationCard({
   selectionMode = false,
   selected = false,
   onToggleSelected,
+  fmtDate
 }: Props) {
   const uiValue: UIStatus =
     displayedStatus ?? (app.status ? API_TO_UI[app.status as APIStatus] : "applied");
@@ -88,11 +90,4 @@ export default function ApplicationCard({
   );
 }
 
-function fmtDate(iso?: string | null) {
-  if (!iso) return "";
-  // Avoid JS Date to prevent timezone issues; format directly
-  const [year, month, day] = iso.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  if (!year || !month || !day) return iso;
-  return `${months[parseInt(month, 10) - 1]} ${day}, ${year}`;
-}
+

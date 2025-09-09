@@ -38,6 +38,7 @@ export default function ApplicationsPage() {
     bulkMove,
     bulkDelete,
     moveStatus,
+    fmtDate,
 
     loadMore,         // () => Promise<void>
     hasMore,          // boolean
@@ -73,10 +74,22 @@ export default function ApplicationsPage() {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const filtered = useMemo(() => {
-    const list = items ?? [];
-    if (active === "all") return list;
-    return list.filter((a: Application) => (a.status ?? "applied") === UI_TO_API[active]);
-  }, [items, active]);
+    let list = items ?? [];
+    if (active !== "all") {
+      list = list.filter((a: Application) => (a.status ?? "applied") === UI_TO_API[active]);
+    }
+    if (q && q.trim()) {
+      const qLower = q.trim().toLowerCase();
+      list = list.filter(
+        (a: Application) =>
+          a.company?.toLowerCase().includes(qLower) ||
+          a.job_title?.toLowerCase().includes(qLower) ||
+          a.applied_date?.toLowerCase().includes(qLower) ||
+          fmtDate(a.applied_date)?.toLowerCase().includes(qLower)
+      );
+    }
+    return list;
+  }, [items, active, q]);
 
   useEffect(() => {
     if (!loadMore || !hasMore) return;
@@ -152,6 +165,7 @@ export default function ApplicationsPage() {
             onStatusChanged={(id, next) => {
               setOverride(id, next);
             }}
+            fmtDate={fmtDate}
           />
 
           <div ref={sentinelRef} aria-hidden className="h-1" />

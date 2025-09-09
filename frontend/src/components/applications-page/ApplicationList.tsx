@@ -9,6 +9,7 @@ export default function ApplicationList({
   selectionMode,
   selected,
   onToggleSelected,
+  fmtDate
 }: {
   apps: Application[];
   getDisplayedStatus?: (a: Application) => UIStatus;
@@ -17,6 +18,7 @@ export default function ApplicationList({
   selectionMode?: boolean;
   selected?: Set<string>;
   onToggleSelected?: (id: string) => void;
+  fmtDate: (iso?: string | null) => string;
 }) {
   return (
     <ul className="grid grid-cols-1 gap-4 md:grid-cols-1">
@@ -29,6 +31,7 @@ export default function ApplicationList({
           selectionMode={selectionMode}
           selected={selected?.has(a.application_id)}
           onToggleSelected={onToggleSelected}
+          fmtDate={fmtDate}
         />
       ))}
     </ul>

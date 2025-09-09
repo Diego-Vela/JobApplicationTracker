@@ -138,6 +138,15 @@ export function useApplications(initial: FetchParams = {}) {
 
   const clearSelection = useCallback(() => setSelected({}), [])
 
+  function fmtDate(iso?: string | null) {
+    if (!iso) return "";
+    // Avoid JS Date to prevent timezone issues; format directly
+    const [year, month, day] = iso.split("-");
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (!year || !month || !day) return iso;
+    return `${months[parseInt(month, 10) - 1]} ${day}, ${year}`;
+  }
+
   return {
     items,
     loading,
@@ -164,5 +173,6 @@ export function useApplications(initial: FetchParams = {}) {
     moveStatus,
     bulkMove,
     bulkDelete,
+    fmtDate,
   }
 }
