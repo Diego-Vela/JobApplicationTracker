@@ -30,6 +30,8 @@ users will only load a maximum of x applications and more will load as the user 
 users can upload a resume/cover letter by dropping in the file. |DONE|
 
 ===== Stretch Goals =====
+users upload a cv at application creation. |IDLE|
+users can search dropdown menus with the leading character. |IDLE|
 users can view their application analytics |IDLE|
 	users can view how many new applications were created this month |IDLE|
 	users can view how many new applications were rejected this month |IDLE|
@@ -45,5 +47,6 @@ users can view all applications linked to a particular resume/cv by clicking on 
 users will get a cleaned url for uploads(CloudFront SetUp) |IDLE|
 
 users have a profile |IDLE|
+
 
 

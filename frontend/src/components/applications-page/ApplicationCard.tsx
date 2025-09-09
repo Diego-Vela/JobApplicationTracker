@@ -51,7 +51,7 @@ export default function ApplicationCard({
         </div>
       </div>
       {app.applied_date && (
-        <p className="mt-2 text-lg text-gray-500">Applied: {formatDate(app.applied_date)}</p>
+        <p className="mt-2 text-lg text-gray-500">Applied: {fmtDate(app.applied_date)}</p>
       )}
     </div>
   );
@@ -88,9 +88,11 @@ export default function ApplicationCard({
   );
 }
 
-function formatDate(iso?: string | null) {
+function fmtDate(iso?: string | null) {
   if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso!;
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
+  // Avoid JS Date to prevent timezone issues; format directly
+  const [year, month, day] = iso.split("-");
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  if (!year || !month || !day) return iso;
+  return `${months[parseInt(month, 10) - 1]} ${day}, ${year}`;
 }

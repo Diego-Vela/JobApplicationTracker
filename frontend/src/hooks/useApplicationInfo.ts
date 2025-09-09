@@ -37,7 +37,10 @@ export function useApplicationInfo(id?: string) {
     setLoading(true);
     setErr(null);
     apiGet<Application>(`/applications/${id}`)
-      .then(setApp)
+      .then((data) => {
+        console.log("Fetched application from backend:", data); // Debug print
+        setApp(data);
+      })
       .catch((e: unknown) => setErr(e instanceof Error ? e.message : "Failed to load application"))
       .finally(() => setLoading(false));
   }, [id]);
@@ -105,10 +108,8 @@ export function useApplicationInfo(id?: string) {
     setCompany(app.company ?? "");
     setJobTitle(app.job_title ?? "");
     setJobDescription(app.job_description ?? "");
-    const d = app.applied_date ? new Date(app.applied_date) : null;
-    setAppliedDate(
-      d && !Number.isNaN(d.getTime()) ? toInputDate(d) : app.applied_date ?? ""
-    );
+    setAppliedDate(app.applied_date ?? ""); // Use the string directly
+    console.log("Setting appliedDate to:", app.applied_date ?? "");
     setResumeOption(app.resume_id ?? "");
     setCoverLetterOption(app.cv_id ?? "");
     setEditing(true);
@@ -160,17 +161,7 @@ export function useApplicationInfo(id?: string) {
 
   function fmtDate(iso?: string | null) {
     if (!iso) return "—";
-    const d = new Date(iso);
-    return Number.isNaN(d.getTime())
-      ? iso
-      : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
-  }
-
-  function toInputDate(d: Date) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
+    return iso;
   }
 
   return {
