@@ -161,7 +161,7 @@ export function useApplicationInfo(id?: string) {
 
   function fmtDate(iso?: string | null) {
     if (!iso) return "—";
-    return iso;
+    return iso.split("T")[0];
   }
 
   return {
