@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
-import { MAX_RESUMES, MAX_CVS, MAX_SIZE_BYTES, ACCEPTED_MIME } from "../components/types";
+import { MAX_RESUMES, MAX_COVER_LETTERS, MAX_SIZE_BYTES, ACCEPTED_MIME } from "../components/types";
 import type { DocType } from "../components/types";
 import { useDocs, uploadToStorage } from "../hooks/useDocs";
 import { Uploader } from "../components/documents-page/Uploader";
@@ -9,13 +9,13 @@ import { DocCard } from "../components/documents-page/DocCard";
 export default function DocumentsPage() {
   const [tab, setTab] = useState<DocType>("resume");
   const resumes = useDocs("resume");
-  const cvs = useDocs("cv");
-  const current = tab === "resume" ? resumes : cvs;
+  const coverLetters = useDocs("cover-letter");
+  const current = tab === "resume" ? resumes : coverLetters;
 
   // Define tab keys and labels for documents
   const DOC_TABS: { key: DocType; label: string }[] = [
     { key: "resume", label: "Resumes" },
-    { key: "cv", label: "CVs" },
+    { key: "cover-letter", label: "Cover Letters" },
   ];
 
   return (
@@ -24,7 +24,7 @@ export default function DocumentsPage() {
         <div>
           <h1 className="text-4xl font-bold">Documents</h1>
           <p className="text-lg text-muted-foreground">
-            Upload and manage up to {MAX_RESUMES} Resumes and {MAX_CVS} CVs per profile.
+            Upload and manage up to {MAX_RESUMES} Resumes and {MAX_COVER_LETTERS} Cover Letters per profile.
           </p>
         </div>
       </div>
@@ -103,7 +103,7 @@ export default function DocumentsPage() {
 function EmptyState({ kind }: { kind: DocType }) {
   return (
     <div className="col-span-full rounded-2xl border p-8 text-center text-md text-muted-foreground">
-      No {kind === "resume" ? "resumes" : "CVs"} yet. Use the uploader above to add your first file.
+      No {kind === "resume" ? "resumes" : "cover letters"} yet. Use the uploader above to add your first file.
     </div>
   );
 }

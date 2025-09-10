@@ -1,14 +1,14 @@
 // src/components/ApplicationDetails.tsx
 import type { Application } from "../types";
 import { ReadOnlyDocCard } from "./ReadOnlyDocCard";
-import type { ResumeOut, CVOut } from "../types";
+import type { ResumeOut, CoverLetterOut } from "../types";
 import { useEffect, useState } from "react";
 import { apiGet } from "../../api";
 
 export function ApplicationDetails({ app, fmtDate }: { app: Application; fmtDate: (iso?: string | null) => string; }) {
   
   const [resumeDoc, setResumeDoc] = useState<ResumeOut | null>(null);
-  const [cvDoc, setCvDoc] = useState<CVOut | null>(null);
+  const [cvDoc, setCvDoc] = useState<CoverLetterOut | null>(null);
 
   useEffect(() => {
   let cancelled = false;
@@ -19,7 +19,7 @@ export function ApplicationDetails({ app, fmtDate }: { app: Application; fmtDate
       // only fetch the lists we need
       const [resumes, cvs] = await Promise.all([
         app.resume_id ? apiGet<ResumeOut[]>("/files/resumes") : Promise.resolve(null),
-        app.cv_id     ? apiGet<CVOut[]>("/files/cv")         : Promise.resolve(null),
+        app.cv_id     ? apiGet<CoverLetterOut[]>("/files/cv")         : Promise.resolve(null),
       ]);
 
       if (cancelled) return;
@@ -77,8 +77,8 @@ export function ApplicationDetails({ app, fmtDate }: { app: Application; fmtDate
             <ReadOnlyDocCard
               doc={{
                 id: app.cv_id,
-                type: "cv",
-                name: cvDoc?.file_name ?? "CV",
+                type: "cover-letter",
+                name: cvDoc?.file_name ?? "cover-letter",
                 label: cvDoc?.label ?? undefined,
                 url: cvDoc?.cv_url,
               }}

@@ -1,7 +1,7 @@
 // src/hooks/useCreateApplication.ts
 import { useEffect, useState, useCallback } from "react";
 import { apiGet, apiPost } from "../api";
-import type { ResumeOut, CVOut, CreatePayload, UIStatus } from "../components/types";
+import type { ResumeOut, CoverLetterOut, CreatePayload, UIStatus } from "../components/types";
 
 
 export function useApplicationsNew() {
@@ -14,7 +14,7 @@ export function useApplicationsNew() {
 
   // Document lists + selected
   const [resumes, setResumes] = useState<ResumeOut[]>([]);
-  const [cvs, setCvs] = useState<CVOut[]>([]);
+  const [cvs, setCvs] = useState<CoverLetterOut[]>([]);
   const [resumeOption, setResumeOption] = useState<string>(""); // "" = None
   const [coverLetterOption, setCoverLetterOption] = useState<string>("");
 
@@ -33,7 +33,7 @@ export function useApplicationsNew() {
         setDocsLoading(true);
         const [resumesData, cvsData] = await Promise.all([
           apiGet<ResumeOut[]>("/files/resumes"),
-          apiGet<CVOut[]>("/files/cv"),
+          apiGet<CoverLetterOut[]>("/files/cv"),
         ]);
         if (cancelled) return;
         setResumes(resumesData || []);

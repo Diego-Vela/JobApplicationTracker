@@ -1,7 +1,7 @@
 // src/features/documents/useDocs.ts
 import { useEffect, useState } from "react"
-import type { DocumentItem, DocType, ResumeOut, CVOut } from "../components/types"
-import { MAX_RESUMES, MAX_CVS } from "../components/types"
+import type { DocumentItem, DocType, ResumeOut, CoverLetterOut } from "../components/types"
+import { MAX_RESUMES, MAX_COVER_LETTERS } from "../components/types"
 import { apiGet, apiPost, apiDelete } from "../api" // ⬅️ use new helpers
 
 /** Upload a file to S3 using a presigned POST from backend */
@@ -50,12 +50,12 @@ export function useDocs(kind: DocType) {
     setLoading(true)
     setError(null)
     try {
-      const data = await apiGet<ResumeOut[] | CVOut[]>(listPath)
+      const data = await apiGet<ResumeOut[] | CoverLetterOut[]>(listPath)
       const mapped: DocumentItem[] = (data as any[]).map((r) => ({
-        id: kind === "resume" ? (r as ResumeOut).resume_id : (r as CVOut).cv_id,
+        id: kind === "resume" ? (r as ResumeOut).resume_id : (r as CoverLetterOut).cv_id,
         name: (r as any).file_name,
         label: (r as any).label ?? null,
-        url: kind === "resume" ? (r as ResumeOut).resume_url : (r as CVOut).cv_url,
+        url: kind === "resume" ? (r as ResumeOut).resume_url : (r as CoverLetterOut).cv_url,
         uploaded_at: (r as any).uploaded_at,
         type: kind,
       }))
@@ -81,22 +81,22 @@ export function useDocs(kind: DocType) {
     }
   }
 
-  const maximumUpload = kind === "resume" ? MAX_RESUMES : MAX_CVS
+  const maximumUpload = kind === "resume" ? MAX_RESUMES : MAX_COVER_LETTERS
   const canUpload = items.length < maximumUpload
 
   const uploadMeta = async (fileUrl: string, fileName: string, label?: string) => {
     //console.log("Uploading metadata", { fileUrl, fileName, label });
-    const created = await apiPost<ResumeOut | CVOut>(listPath, {
+    const created = await apiPost<ResumeOut | CoverLetterOut>(listPath, {
       url: fileUrl,
       file_name: fileName,
       label,
     })
     //console.log("Created metadata");
     const mapped: DocumentItem = {
-      id: kind === "resume" ? (created as ResumeOut).resume_id : (created as CVOut).cv_id,
+      id: kind === "resume" ? (created as ResumeOut).resume_id : (created as CoverLetterOut).cv_id,
       name: created.file_name,
       label: (created as any).label ?? null,
-      url: kind === "resume" ? (created as ResumeOut).resume_url : (created as CVOut).cv_url,
+      url: kind === "resume" ? (created as ResumeOut).resume_url : (created as CoverLetterOut).cv_url,
       uploaded_at: created.uploaded_at,
       type: kind,
     }
