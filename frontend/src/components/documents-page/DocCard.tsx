@@ -93,7 +93,6 @@ export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => 
                 const { url } = await apiGet<{ url: string }>(
                   `/files/presign-get?kind=${doc.type}&item_id=${doc.id}&disposition=inline`
                 );
-                console.log(doc.type)
                 window.open(url, "_blank", "noopener,noreferrer");
               }}
               className="inline-flex items-center gap-1 rounded-xl border px-2.5 py-1.5 text-lg font-medium hover:bg-gray-200"

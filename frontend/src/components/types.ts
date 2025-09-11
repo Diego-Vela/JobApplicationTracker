@@ -42,7 +42,7 @@ export const MAX_DESCRIPTION_LENGTH = 10000;
 export const MAX_TOTAL_APPLICATIONS = 500;
 
 // ---------------------------------- Document-related types ---------------------------------- //
-export type DocType = "resume" | "cover-letter";
+export type DocType = "resume" | "cv";
 
 export type ResumeOut = {
   resume_id: string;
@@ -52,7 +52,7 @@ export type ResumeOut = {
   uploaded_at?: string;
 };
 
-export type CoverLetterOut = {
+export type CVOut = {
   cv_id: string;
   file_name: string;
   label?: string | null;

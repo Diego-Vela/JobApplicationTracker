@@ -79,10 +79,7 @@ export function Uploader({
           <h2 className="text-xl font-medium">Upload {kind === "resume" ? "Resume" : "Cover Letter"}</h2>
         </div>
         <span className="text-lg text-gray-600 text-muted-foreground">
-          Max {kind === "resume" ? MAX_RESUMES : MAX_COVER_LETTERS} {kind === "resume" ? "resumes" : "CVs"}
-=======
-          Max {kind === "resume" ? MAX_RESUMES : MAX_CVS} {kind === "resume" ? "resumes" : "cover letters"}
->>>>>>> origin/pre-release/return
+          Max {kind === "resume" ? MAX_RESUMES : MAX_COVER_LETTERS} {kind === "resume" ? "resumes" : "cover letters"}
         </span>
       </div>
 

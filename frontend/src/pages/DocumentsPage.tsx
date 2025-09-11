@@ -9,16 +9,13 @@ import { DocCard } from "../components/documents-page/DocCard";
 export default function DocumentsPage() {
   const [tab, setTab] = useState<DocType>("resume");
   const resumes = useDocs("resume");
-  const coverLetters = useDocs("cover-letter");
+  const coverLetters = useDocs("cv");
   const current = tab === "resume" ? resumes : coverLetters;
 
   // Define tab keys and labels for documents
   const DOC_TABS: { key: DocType; label: string }[] = [
     { key: "resume", label: "Resumes" },
-    { key: "cover-letter", label: "Cover Letters" },
-=======
     { key: "cv", label: "Cover Letters" },
->>>>>>> origin/pre-release/return
   ];
 
   return (
