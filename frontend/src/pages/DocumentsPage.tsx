@@ -15,7 +15,7 @@ export default function DocumentsPage() {
   // Define tab keys and labels for documents
   const DOC_TABS: { key: DocType; label: string }[] = [
     { key: "resume", label: "Resumes" },
-    { key: "cv", label: "CVs" },
+    { key: "cv", label: "Cover Letters" },
   ];
 
   return (

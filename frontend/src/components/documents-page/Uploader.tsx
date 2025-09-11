@@ -76,10 +76,10 @@ export function Uploader({
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UploadCloud className="h-5 w-5" />
-          <h2 className="text-xl font-medium">Upload {kind === "resume" ? "Resume" : "CV"}</h2>
+          <h2 className="text-xl font-medium">Upload {kind === "resume" ? "Resume" : "Cover Letter"}</h2>
         </div>
         <span className="text-lg text-gray-600 text-muted-foreground">
-          Max {kind === "resume" ? MAX_RESUMES : MAX_CVS} {kind === "resume" ? "resumes" : "CVs"}
+          Max {kind === "resume" ? MAX_RESUMES : MAX_CVS} {kind === "resume" ? "resumes" : "cover letters"}
         </span>
       </div>
 
