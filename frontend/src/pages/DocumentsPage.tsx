@@ -16,6 +16,9 @@ export default function DocumentsPage() {
   const DOC_TABS: { key: DocType; label: string }[] = [
     { key: "resume", label: "Resumes" },
     { key: "cover-letter", label: "Cover Letters" },
+=======
+    { key: "cv", label: "Cover Letters" },
+>>>>>>> origin/pre-release/return
   ];
 
   return (

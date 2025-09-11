@@ -12,7 +12,7 @@ export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => 
     const message =
       doc.type === "resume"
         ? "Are you sure you want to delete this resume?\n\nAll linked applications that use it will have their attached resume set to null."
-        : "Are you sure you want to delete this CV?\n\nIt will be permanently removed.";
+        : "Are you sure you want to delete this cover letter?\n\nIt will be permanently removed.";
     if (!window.confirm(message)) return;
 
     setBusy(true);
@@ -65,7 +65,7 @@ export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => 
         {/* Right: file type + actions */}
         <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
           <span className={`rounded-md ${ ext === "PDF" ? "text-red-400" : "text-blue-400"} px-2 py-1 text-lg font-medium text-muted-foreground`}>
-            {ext || (doc.type === "resume" ? "RESUME" : "CV")}
+            {ext || (doc.type === "resume" ? "RESUME" : "COVER LETTER")}
           </span>
 
           {/* Download button */}  
@@ -93,6 +93,7 @@ export function DocCard({ doc, onDelete }: { doc: DocumentItem; onDelete: () => 
                 const { url } = await apiGet<{ url: string }>(
                   `/files/presign-get?kind=${doc.type}&item_id=${doc.id}&disposition=inline`
                 );
+                console.log(doc.type)
                 window.open(url, "_blank", "noopener,noreferrer");
               }}
               className="inline-flex items-center gap-1 rounded-xl border px-2.5 py-1.5 text-lg font-medium hover:bg-gray-200"
