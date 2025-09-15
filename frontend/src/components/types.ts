@@ -41,7 +41,7 @@ export const MAX_NOTES_LENGTH = 500;
 export const MAX_DESCRIPTION_LENGTH = 10000;
 export const MAX_TOTAL_APPLICATIONS = 500;
 
-// ---------------------------------- Document-related types ---------------------------------- //
+// ---------------------------------- Document-related types(cv for cover letter) ---------------------------------- //
 export type DocType = "resume" | "cv";
 
 export type ResumeOut = {
