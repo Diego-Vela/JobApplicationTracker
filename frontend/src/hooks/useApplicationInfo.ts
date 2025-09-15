@@ -2,7 +2,7 @@
 import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost, apiPatch, apiDelete } from "../api";
-import type { Application, UIStatus, ResumeOut, CoverLetterOut } from "../components/types";
+import type { Application, UIStatus, ResumeOut, CVOut } from "../components/types";
 import { UI_TO_API, API_TO_UI } from "../components/statusMaps";
 
 export function useApplicationInfo(id?: string) {
@@ -13,7 +13,7 @@ export function useApplicationInfo(id?: string) {
   const [err, setErr] = useState<string | null>(null);
 
   const [resumes, setResumes] = useState<ResumeOut[]>([]);
-  const [cvs, setCvs] = useState<CoverLetterOut[]>([]);
+  const [cvs, setCvs] = useState<CVOut[]>([]);
   const [resumeOption, setResumeOption] = useState<string>("");
   const [coverLetterOption, setCoverLetterOption] = useState<string>("");
 
@@ -54,7 +54,7 @@ export function useApplicationInfo(id?: string) {
 
     Promise.all([
       apiGet<ResumeOut[]>("/files/resumes"),
-      apiGet<CoverLetterOut[]>("/files/cv"),
+      apiGet<CVOut[]>("/files/cv"),
     ])
       .then(([resumesData, cvsData]) => {
         if (cancelled) return;
