@@ -36,14 +36,12 @@ def list_applications(
     status_eq: str | None = Query(None),
     sort_by: Literal["created_at","applied_date","company","status"] = "applied_date",
     order: Literal["asc","desc"] = "desc",
-    limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0),
 ):
     from sqlalchemy import asc, desc, or_
 
     query = (
         db.query(models.Application)
-        .filter(models.Application.user_id == current_user.user_id)  # <-- use .user_id
+        .filter(models.Application.user_id == current_user.user_id)  
     )
 
     if q:
@@ -62,7 +60,7 @@ def list_applications(
     col = getattr(models.Application, sort_by)
     query = query.order_by(asc(col) if order == "asc" else desc(col))
 
-    return query.offset(offset).limit(limit).all()
+    return query.all()
 
 
 @router.post("", status_code=201)
@@ -138,7 +136,6 @@ def bulk_move(
     current_user: models.User = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    # Only update owned applications
     q = db.query(models.Application).filter(
         models.Application.user_id == current_user.user_id,
         models.Application.application_id.in_(payload.ids),

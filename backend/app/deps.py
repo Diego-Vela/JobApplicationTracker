@@ -158,7 +158,6 @@ def get_current_user_id(
 
     user = db.query(User).filter(User.cognito_sub == sub).first()
     if not user:
-        # Lazy provision
         user = User(cognito_sub=sub, email=email or "")
         db.add(user)
         db.commit()

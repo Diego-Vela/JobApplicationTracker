@@ -8,9 +8,9 @@ experience for organizing applications, resumes, and career progress.
 
 ---
 
-## 🚀 Features
+## Features
 
-### 🔐 Authentication & Security
+### Authentication & Security
 - **User Registration & Login** – Create an account with secure authentication.
 - **Email Verification** – Users must verify their email before their account is active.
 - **Password Policies** – Strong password requirements (min 8 chars, at least 1 special character).
@@ -19,14 +19,14 @@ experience for organizing applications, resumes, and career progress.
 
 ---
 
-### 📄 Document Management
+### Document Management
 - **Upload Resumes & CVs** – Store up to 5 resumes and 50 CVs in the cloud (via AWS S3).
 - **Download & Preview** – Secure presigned URLs allow file viewing and downloading.
 - **Delete Documents** – Safely remove files; linked applications will auto-update if resume is deleted.
 
 ---
 
-### 📌 Job Applications
+### Job Applications
 - **Create Applications** – Add company, job title, job description, and applied date.
 - **Attach Documents** – Link an uploaded resume or CV to each application.
 - **Status Tracking** – Update status (applied, interview, offer, rejected, etc.).
@@ -35,14 +35,14 @@ experience for organizing applications, resumes, and career progress.
 
 ---
 
-### 📝 Notes
+### Notes
 - **Personal Notes** – Add notes for each application (e.g., recruiter details, interview tips).
 - **Edit & Update** – Modify notes anytime.
 - **Delete Notes** – Keep your applications clean and organized.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend** – React (Vite, TailwindCSS)
 - **Backend** – FastAPI (Python), SQLAlchemy ORM
@@ -53,7 +53,7 @@ experience for organizing applications, resumes, and career progress.
 
 ---
 
-## 📈 Future Features
+## Future Features
 
 - [ ] Sharing an application
 - [ ] Premium tier with storage

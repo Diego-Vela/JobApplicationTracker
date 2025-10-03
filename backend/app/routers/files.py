@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from urllib.parse import quote as urlquote
 from botocore.exceptions import ClientError
 from typing import Literal
+from sqlalchemy.exc import IntegrityError
 
 # NEW: imports for S3 presign + utils
 import os, re, uuid, mimetypes, boto3, requests
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/files", tags=["files"])
 # -------------------- Config --------------------
 S3_BUCKET   = os.getenv("S3_BUCKET_NAME")
 S3_REGION   = os.getenv("S3_REGION")
-CDN_DOMAIN  = os.getenv("S3_CLOUDFRONT_DOMAIN")  # dxxx.cloudfront.net (optional)
+CDN_DOMAIN  = os.getenv("S3_CLOUDFRONT_DOMAIN")  
 MAX_SIZE    = 10 * 1024 * 1024  # 10 MB hard cap
 ALLOWED_CT  = {
     "application/pdf",
@@ -94,7 +95,7 @@ def key_from_url(url: str) -> str:
     return p.path.lstrip("/")  # everything after the first '/'
 
 def verify_s3_object(url: str, max_size: int = MAX_SIZE):
-    """Verify uploaded object using AWS credentials (works with private buckets)."""
+    """Verify uploaded object using AWS credentials."""
     key = key_from_url(url)
     try:
         head = s3.head_object(Bucket=S3_BUCKET, Key=key)
@@ -249,9 +250,7 @@ def create_resume(
     db: Session = Depends(get_db),
 ):
     user_id = _require_user_id(request)
-    print("User ID:", user_id)
     verify_s3_object(meta.url)
-    print("S3 object verified:", meta.url) 
     rec = models.Resume(user_id=user_id, resume_url=meta.url, file_name=meta.file_name, label=meta.label)
     db.add(rec); db.commit(); db.refresh(rec)
     return schemas.ResumeOut(
@@ -280,10 +279,6 @@ def list_resumes(
         )
         for r in rows
     ]
-
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
 @router.delete("/resumes/{resume_id}", status_code=204)
 def delete_resume(
