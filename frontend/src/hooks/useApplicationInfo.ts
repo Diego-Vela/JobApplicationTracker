@@ -109,7 +109,7 @@ export function useApplicationInfo(id?: string) {
     setJobTitle(app.job_title ?? "");
     setJobDescription(app.job_description ?? "");
     setAppliedDate(app.applied_date ?? ""); // Use the string directly
-    console.log("Setting appliedDate to:", app.applied_date ?? "");
+    //console.log("Setting appliedDate to:", app.applied_date ?? "");
     setResumeOption(app.resume_id ?? "");
     setCoverLetterOption(app.cv_id ?? "");
     setEditing(true);
