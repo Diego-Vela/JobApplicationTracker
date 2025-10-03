@@ -38,7 +38,7 @@ export function useApplicationInfo(id?: string) {
     setErr(null);
     apiGet<Application>(`/applications/${id}`)
       .then((data) => {
-        console.log("Fetched application from backend:", data); // Debug print
+        //console.log("Fetched application from backend:", data); // Debug print
         setApp(data);
       })
       .catch((e: unknown) => setErr(e instanceof Error ? e.message : "Failed to load application"))
