@@ -76,5 +76,5 @@ export const ACCEPTED_MIME = [
 ];
 
 export const MAX_RESUMES = 5;
-export const MAX_COVER_LETTERS = 40;
+export const MAX_COVER_LETTERS = 150;
 export const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
