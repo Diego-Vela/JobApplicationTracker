@@ -36,9 +36,9 @@ export type CreatePayload = {
 };
 
 export const MAX_NUM_NOTES = 10;
-export const MAX_LABEL_LENGTH = 50;
+export const MAX_LABEL_LENGTH = 100;
 export const MAX_NOTES_LENGTH = 500;
-export const MAX_DESCRIPTION_LENGTH = 10000;
+export const MAX_DESCRIPTION_LENGTH = 12000;
 export const MAX_TOTAL_APPLICATIONS = 500;
 
 // ---------------------------------- Document-related types(cv for cover letter) ---------------------------------- //
@@ -75,6 +75,6 @@ export const ACCEPTED_MIME = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
-export const MAX_RESUMES = 10;
+export const MAX_RESUMES = 25;
 export const MAX_COVER_LETTERS = 150;
 export const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
