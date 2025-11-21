@@ -75,6 +75,6 @@ export const ACCEPTED_MIME = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
-export const MAX_RESUMES = 25;
+export const MAX_RESUMES = 250;
 export const MAX_COVER_LETTERS = 150;
 export const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
